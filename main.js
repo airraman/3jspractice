@@ -33,7 +33,7 @@ scene.add(light)
 const camera = new THREE.PerspectiveCamera(45, sizes.width/sizes.height)
 
 //Moving camera back since default is to be in same position as shape
-camera.position.z = 10
+camera.position.z = 15
 scene.add(camera)
 
 //Renderer
