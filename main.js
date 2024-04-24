@@ -8,13 +8,18 @@ import { OrbitControls } from 'three/examples/jsm/Addons.js';
 const scene = new THREE.Scene();
 
 //Create Shape
-const geometry = new THREE.SphereGeometry(3, 64, 64)
-const material = new THREE.MeshStandardMaterial({
-  color: "#00ff83",
-  roughness: .02
-})
-const mesh = new THREE.Mesh(geometry, material)
-scene.add(mesh)
+// const geometry = new THREE.SphereGeometry(3, 64, 64)
+// const material = new THREE.MeshStandardMaterial({
+//   color: "#00ff83",
+//   roughness: .02
+// })
+// const mesh = new THREE.Mesh(geometry, material)
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.MeshBasicMaterial({
+  // color: 0xFF0000, 
+  map: new THREE.TextureLoader().load('./img/globe.jpeg')
+
+}))
+scene.add(sphere)
 
 
 //Sizes 
