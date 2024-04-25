@@ -7,24 +7,20 @@ import { OrbitControls } from 'three/examples/jsm/Addons.js';
 //Create Scene
 const scene = new THREE.Scene();
 
-// const myUrl = 'https://b3d.interplanety.org/wp-content/upload_content/2016/08/01-3.jpg'
 
-//Create Shape
+// Create Shape
 // const geometry = new THREE.SphereGeometry(3, 64, 64)
 // const material = new THREE.MeshStandardMaterial({
 //   color: "#00ff83",
 //   roughness: .02
 // })
 // const mesh = new THREE.Mesh(geometry, material)
-const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.MeshBasicMaterial({
-  // color: 0xFF0000, 
-  
-  map: new THREE.TextureLoader().load('public/img/globe.jpeg')
 
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.MeshBasicMaterial({  
+  map: new THREE.TextureLoader().load('/img/globe.jpeg')
 }))
 
 scene.add(sphere)
-
 
 //Sizes 
 const sizes = {
