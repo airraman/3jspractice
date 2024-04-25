@@ -16,7 +16,7 @@ const scene = new THREE.Scene();
 // const mesh = new THREE.Mesh(geometry, material)
 const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.MeshBasicMaterial({
   // color: 0xFF0000, 
-  map: new THREE.TextureLoader().load('./img/globe.jpeg')
+  map: new THREE.TextureLoader().load('public/img/globe.jpeg')
 
 }))
 scene.add(sphere)
@@ -80,7 +80,7 @@ loop()
 //timeline management
 
 const tl = gsap.timeline({default: {duration: 1}})
-tl.fromTo(mesh.scale, {x:0, y:0, z:0}, {x:1, y:1, z:1})
+tl.fromTo(Mesh.scale, {x:0, y:0, z:0}, {x:1, y:1, z:1})
 tl.fromTo('nav', {y: "-100%"}, {y: "0%"})
 tl.fromTo('.title', {opacity: 0}, {opacity: 1})
 
