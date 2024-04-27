@@ -2,7 +2,10 @@ import * as THREE from 'three'
 import './style.css'
 import gsap from 'gsap'
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
-
+import vertexShader from './shaders/vertex.glsl'
+import fragmentShader from './shaders/fragment.glsl'
+import atmosphereVertex from './shaders/atmosphereVertex.glsl'
+import atmosphereFragment from './shaders/atmosphereFragment.glsl'
 
 //Create Scene
 const scene = new THREE.Scene();
@@ -16,11 +19,30 @@ const scene = new THREE.Scene();
 // })
 // const mesh = new THREE.Mesh(geometry, material)
 
-const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.MeshBasicMaterial({  
-  map: new THREE.TextureLoader().load('/img/globe.jpeg')
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.ShaderMaterial({  
+ vertexShader,
+ fragmentShader, 
+ uniforms: {
+  globeTexture: {
+    value: new THREE.TextureLoader().load('/img/globe.jpeg')
+  }
+ }
 }))
 
 scene.add(sphere)
+
+//creating atmosphere object
+
+const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.ShaderMaterial({  
+  vertexShader: atmosphereVertex,
+  fragmentShader: atmosphereFragment, 
+  blending: THREE.AdditiveBlending,
+  side: THREE.BackSide
+ }))
+
+ atmosphere.scale.set(1.1,1.1,1.1)
+ 
+ scene.add(atmosphere)
 
 //Sizes 
 const sizes = {
@@ -44,8 +66,9 @@ scene.add(camera)
 //Renderer
 
 const canvas = document.querySelector('.webgl');
-const renderer = new THREE.WebGLRenderer({canvas});
-renderer.setPixelRatio(2)
+const renderer = new THREE.WebGLRenderer({canvas, 
+  antialias: true});
+renderer.setPixelRatio(window.devicePixelRatio)
 
 renderer.setSize(sizes.width, sizes.height)
 renderer.render(scene, camera)
