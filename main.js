@@ -50,18 +50,30 @@ const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE
   color: 0xffffff
  })
 
- const starVertices = []
+ // STARTS HERE: Open AI's suggestion for making the stars go behind the planet // 
+const starVertices = [];
+const planetRadius = 2; // Radius of the planet
+const starRadius = 2500; // Radius of the star sphere
 
+for (let i = 0; i < 10000; i++) {
+  const phi = Math.random() * Math.PI * 2; // Random azimuthal angle
+  const theta = Math.random() * Math.PI; // Random polar angle
 
- for (let i =0; i < 10000; i++){
-  const x = (Math.random() - .5) * 2000
-  const y = (Math.random() - .5) * 2000
-  const z = Math.random() * 2000
-  starVertices.push(x,y,z)
- }
+  const x = starRadius * Math.sin(theta) * Math.cos(phi);
+  const y = starRadius * Math.sin(theta) * Math.sin(phi);
+  const z = starRadius * Math.cos(theta);
+
+  const distance = Math.sqrt(x * x + y * y + z * z);
+  const normalizedX = x / distance * (starRadius + planetRadius);
+  const normalizedY = y / distance * (starRadius + planetRadius);
+  const normalizedZ = z / distance * (starRadius + planetRadius);
+
+  starVertices.push(normalizedX, normalizedY, normalizedZ);
+}
+
+// ENDS HERE: Open AI's suggestion for making the stars go behind the planet // 
 
  starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3))
-
 
  console.log(starVertices)
 
@@ -87,6 +99,47 @@ const camera = new THREE.PerspectiveCamera(45, sizes.width/sizes.height)
 //Moving camera back since default is to be in same position as shape
 camera.position.z = 15
 scene.add(camera)
+
+
+
+function createPoint(lat, lng){
+
+  const point = new THREE.Mesh(new THREE.SphereGeometry(.1, 20, 20), 
+new THREE.MeshBasicMaterial({
+  color:'#ff0000'
+})
+)
+  const latitude = (lat / 180) * Math.PI
+  const longitude = (lng/ 180) * Math.PI
+  const radius = 2
+
+  const x = radius * Math.cos(latitude) * Math.sin(longitude)
+  const y = radius * Math.sin(latitude)
+  const z = radius * Math.cos(latitude) * Math.cos(longitude)
+
+  point.position.x = x
+  point.position.y = y
+  point.position.z = z 
+
+  sphere.rotation.y = -Math.PI/2
+
+  scene.add(point)
+}
+
+createPoint(48.8575, 2.3514)
+createPoint(52.3676, 4.9041)
+createPoint(51.5072, -0.1276)
+createPoint(31.6225, -7.9898)
+createPoint(38.7223, -9.1393)
+createPoint(40.6958, -73.9171)
+createPoint(37.8044, -122.2712)
+createPoint(6.3562, 2.4278)
+
+
+
+//48.8575° N, 2.3514° E = paris
+
+
 
 //Renderer
 
@@ -153,3 +206,4 @@ tl.fromTo('.title', {opacity: 0}, {opacity: 1})
 //     gsap.to(mesh.material.color, {r: newColor.r, g: newColor.g, b:newColor.b})
 //   }
 // })
+
