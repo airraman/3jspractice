@@ -46,3 +46,21 @@ nav ul{
     top: 75%;
     transform: translate(-50%, -75%);
 }
+
+.textbox{
+    color: #BCD2F1;
+    border-style: solid;
+    margin-top: 5vh;
+    width: 20vw;
+    height: 5vh;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: monospace;
+}
+
+.innertext{
+    z-index: 1;
+}
