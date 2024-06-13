@@ -10,15 +10,6 @@ import atmosphereFragment from './shaders/atmosphereFragment.glsl'
 //Create Scene
 const scene = new THREE.Scene();
 
-
-// Create Shape
-// const geometry = new THREE.SphereGeometry(3, 64, 64)
-// const material = new THREE.MeshStandardMaterial({
-//   color: "#00ff83",
-//   roughness: .02
-// })
-// const mesh = new THREE.Mesh(geometry, material)
-
 const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.ShaderMaterial({  
  vertexShader,
  fragmentShader, 
@@ -44,42 +35,63 @@ const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE
  
  scene.add(atmosphere)
 
+ //creates stars on one half of the screen 
  const starGeometry = new THREE.BufferGeometry()
 
  const starMaterial = new THREE.PointsMaterial({
   color: 0xffffff
  })
 
- // STARTS HERE: Open AI's suggestion for making the stars go behind the planet // 
-const starVertices = [];
-const planetRadius = 2; // Radius of the planet
-const starRadius = 2500; // Radius of the star sphere
-
-for (let i = 0; i < 10000; i++) {
-  const phi = Math.random() * Math.PI * 2; // Random azimuthal angle
-  const theta = Math.random() * Math.PI; // Random polar angle
-
-  const x = starRadius * Math.sin(theta) * Math.cos(phi);
-  const y = starRadius * Math.sin(theta) * Math.sin(phi);
-  const z = starRadius * Math.cos(theta);
-
-  const distance = Math.sqrt(x * x + y * y + z * z);
-  const normalizedX = x / distance * (starRadius + planetRadius);
-  const normalizedY = y / distance * (starRadius + planetRadius);
-  const normalizedZ = z / distance * (starRadius + planetRadius);
-
-  starVertices.push(normalizedX, normalizedY, normalizedZ);
+const starVertices = []
+for (let i = 0; i < 20000; i++) {
+  const x = (Math.random() - 0.5) * 2000
+  const y = (Math.random() - 0.5) * 2000
+  const z = -Math.random() * 3000
+  starVertices.push(x, y, z)
 }
 
-// ENDS HERE: Open AI's suggestion for making the stars go behind the planet // 
+starGeometry.setAttribute(
+  'position',
+  new THREE.Float32BufferAttribute(starVertices, 3)
+)
 
- starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3))
+const stars = new THREE.Points(starGeometry, starMaterial)
+scene.add(stars)
 
- console.log(starVertices)
+starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3))
 
- const stars = new THREE.Points(starGeometry, starMaterial)
+console.log(starVertices)
+//creates stars on one half of the screen
 
- scene.add(stars)
+//population other side of screen
+
+const starGeometryTwo = new THREE.BufferGeometry()
+
+const starMaterialTwo = new THREE.PointsMaterial({
+  color: 0xffffff
+ })
+
+const starVerticesTwo = []
+ for (let i = 0; i < 20000; i++) {
+   const x = (Math.random() - 0.5) * -2000
+   const y = (Math.random() - 0.5) * -2000
+   const z = -Math.random() * -3000
+   starVertices.push(x, y, z)
+ }
+
+ starGeometryTwo.setAttribute(
+  'position',
+  new THREE.Float32BufferAttribute(starVertices, 3)
+)
+
+const starsTwo = new THREE.Points(starGeometryTwo, starMaterialTwo)
+scene.add(starsTwo)
+
+starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerticesTwo, 3))
+
+
+//population other side of screen
+
 
 //Sizes 
 const sizes = {
@@ -100,13 +112,11 @@ const camera = new THREE.PerspectiveCamera(45, sizes.width/sizes.height)
 camera.position.z = 15
 scene.add(camera)
 
-
-
 function createPoint(lat, lng){
 
   const box = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .8), 
 new THREE.MeshBasicMaterial({
-  color:'#ff0000'
+  color:'#BCD2F1'
 })
 )
   const latitude = (lat / 180) * Math.PI
