@@ -6,6 +6,50 @@ import vertexShader from './shaders/vertex.glsl'
 import fragmentShader from './shaders/fragment.glsl'
 import atmosphereVertex from './shaders/atmosphereVertex.glsl'
 import atmosphereFragment from './shaders/atmosphereFragment.glsl'
+// import Typewriter from "typewriter-effect";
+
+//Initiate Typewriter 
+var typingElement = document.querySelector(".innertext");
+var typeArray = ["Welcome to SongMap.io", 
+  "These are songs I wrote all around the world", 
+  "Click on a location", 
+  "and listen to the song"];
+var index = 0,
+  isAdding = true,
+  typeIndex = 0;
+
+function playAnim() {
+  setTimeout(
+    function () {
+      typingElement.innerText = typeArray[typeIndex].slice(0, index);
+      if (isAdding) {
+        if (index >= typeArray[typeIndex].length) {
+          isAdding = false;
+          setTimeout(function () {
+            playAnim();
+          }, 2000);
+          return;
+        } else {
+          index++;
+        }
+      } else {
+        if (index === 0) {
+          isAdding = true;
+          typeIndex++;
+          if (typeIndex >= typeArray.length) {
+            typeIndex = 0;
+          }
+        } else {
+          index--;
+        }
+      }
+      playAnim();
+    },
+    isAdding ? 120 : 60
+  );
+}
+playAnim();
+
 
 //Create Scene
 const scene = new THREE.Scene();
@@ -34,6 +78,11 @@ const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE
  atmosphere.scale.set(1.1,1.1,1.1)
  
  scene.add(atmosphere)
+
+ const group = new THREE.Group()
+ group.add(sphere)
+ scene.add(group)
+
 
  //creates stars on one half of the screen 
  const starGeometry = new THREE.BufferGeometry()
@@ -64,7 +113,6 @@ console.log(starVertices)
 //creates stars on one half of the screen
 
 //population other side of screen
-
 const starGeometryTwo = new THREE.BufferGeometry()
 
 const starMaterialTwo = new THREE.PointsMaterial({
@@ -88,8 +136,6 @@ const starsTwo = new THREE.Points(starGeometryTwo, starMaterialTwo)
 scene.add(starsTwo)
 
 starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerticesTwo, 3))
-
-
 //population other side of screen
 
 
@@ -114,11 +160,12 @@ scene.add(camera)
 
 function createPoint(lat, lng){
 
-  const box = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .8), 
-new THREE.MeshBasicMaterial({
+  const box = new THREE.Mesh(
+  new THREE.BoxGeometry(.1, .1, .8), 
+  new THREE.MeshBasicMaterial({
   color:'#BCD2F1'
-})
-)
+  })
+  )
   const latitude = (lat / 180) * Math.PI
   const longitude = (lng/ 180) * Math.PI
   const radius = 2
@@ -131,20 +178,27 @@ new THREE.MeshBasicMaterial({
   box.position.y = y
   box.position.z = z 
 
-  sphere.rotation.y = -Math.PI/2
-
   box.lookAt(0,0,0)
 
   gsap.to(box.scale, {
-    z: 0, 
+    z: .4, 
     duration: 5, 
     yoyo: true,
-    repeat: -1, 
+    repeat: -1,  
+    ease: 'linear', 
     delay: Math.random()
   })
   box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -.4))
 
-  scene.add(box)
+  sphere.add(box)
+
+}
+
+sphere.rotation.y = -Math.PI/6
+
+group.rotation.offset = {
+  x: 0,
+  y: 0
 }
 
 createPoint(48.8575, 2.3514)
@@ -158,11 +212,6 @@ createPoint(6.3562, 2.4278)
 createPoint(-33.8688, 151.2093)
 
 
-
-//48.8575° N, 2.3514° E = paris
-
-
-
 //Renderer
 
 const canvas = document.querySelector('.webgl');
@@ -173,6 +222,24 @@ renderer.setPixelRatio(window.devicePixelRatio)
 renderer.setSize(sizes.width, sizes.height)
 renderer.render(scene, camera)
 
+const mouse = {
+  x: 0,
+  y: 0,
+}
+
+function animate(){
+  requestAnimationFrame(animate)
+  renderer.render(scene, camera)
+  sphere.rotation.y += 0.003
+  group.rotation.y = mouse.x
+}
+animate()
+
+addEventListener('mousemove',() =>{
+  mouse.x = (event.clientX/innerWidth) * 2 - 1
+  mouse.y = -(event.clientY/innerHeight) * 2 + 1
+  console.log(mouse)
+})
 
 //Controls 
 
@@ -181,7 +248,7 @@ controls.enableDamping = true
 controls.enablePan = false
 controls.enableZoom = false
 controls.autoRotate = true
-controls.autoRotateSpeed = 5
+// controls.autoRotateSpeed = 5
 
 //Resize 
 window.addEventListener('resize', ()=>{
@@ -200,32 +267,6 @@ const loop = () => {
 
 loop()
 
-//timeline management
-
-const tl = gsap.timeline({default: {duration: 1}})
-tl.fromTo(Mesh.scale, {x:0, y:0, z:0}, {x:1, y:1, z:1})
-tl.fromTo('nav', {y: "-100%"}, {y: "0%"})
-tl.fromTo('.title', {opacity: 0}, {opacity: 1})
-
-//Mouse Anmiation Color
-
-// let mouseDown = false
-// let rgb = [12, 23, 55]
-
-
-// window.addEventListener('mousedown', () =>(mouseDown = true))
-// window.addEventListener('mouseup', () =>(mouseDown = false))
-
-// window.addEventListener('mousemove', (e) =>{
-//   if(mouseDown){
-//     rgb = [
-//       Math.round((e.pageX / sizes.width) * 255), 
-//       Math.round((e.pageY / sizes.height) * 255),
-//       150
-//     ]
-//     let newColor = new THREE.Color(`rgb(${rgb.join(",")})`)
-//     new THREE.Color((`rgb(0, 100, 150)`))
-//     gsap.to(mesh.material.color, {r: newColor.r, g: newColor.g, b:newColor.b})
-//   }
-// })
+// const raycaster = new THREE.Raycaster();
+// console.log(raycaster)
 
