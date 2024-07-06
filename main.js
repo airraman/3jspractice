@@ -6,7 +6,7 @@ import vertexShader from './shaders/vertex.glsl'
 import fragmentShader from './shaders/fragment.glsl'
 import atmosphereVertex from './shaders/atmosphereVertex.glsl'
 import atmosphereFragment from './shaders/atmosphereFragment.glsl'
-// import Typewriter from "typewriter-effect";
+
 
 //Initiate Typewriter 
 var typingElement = document.querySelector(".innertext");
@@ -50,21 +50,47 @@ function playAnim() {
 }
 playAnim();
 
+const canvas = document.querySelector('.webgl');
+
+//Sizes 
+const sizes = {
+  width: window.innerWidth, 
+  height: window.innerHeight
+}
 
 //Create Scene
 const scene = new THREE.Scene();
 
-const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.ShaderMaterial({  
- vertexShader,
- fragmentShader, 
- uniforms: {
-  globeTexture: {
-    value: new THREE.TextureLoader().load('/img/globe.jpeg')
-  }
- }
-}))
+//Camera
 
-scene.add(sphere)
+const camera = new THREE.PerspectiveCamera(45, sizes.width/sizes.height)
+
+//Moving camera back since default is to be in same position as shape
+camera.position.z = 15
+scene.add(camera)
+
+//Renderer
+
+const renderer = new THREE.WebGLRenderer({canvas, 
+  antialias: true});
+renderer.setPixelRatio(window.devicePixelRatio)
+
+renderer.setSize(sizes.width, sizes.height)
+renderer.render(scene, camera)
+
+//creating sphere object
+
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.ShaderMaterial({  
+  vertexShader,
+  fragmentShader, 
+  uniforms: {
+   globeTexture: {
+     value: new THREE.TextureLoader().load('/img/globe.jpeg')
+   }
+  }
+ }))
+
+ scene.add(sphere)
 
 //creating atmosphere object
 
@@ -138,25 +164,10 @@ scene.add(starsTwo)
 starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerticesTwo, 3))
 //population other side of screen
 
-
-//Sizes 
-const sizes = {
-  width: window.innerWidth, 
-  height: window.innerHeight
-}
-
 //Light 
 const light = new THREE.PointLight(0xffffff, 100, 0)
 light.position.set(0, 10, 10)
 scene.add(light)
-
-//Camera
-
-const camera = new THREE.PerspectiveCamera(45, sizes.width/sizes.height)
-
-//Moving camera back since default is to be in same position as shape
-camera.position.z = 15
-scene.add(camera)
 
 function createPoint(lat, lng){
 
@@ -181,7 +192,7 @@ function createPoint(lat, lng){
   box.lookAt(0,0,0)
 
   gsap.to(box.scale, {
-    z: .4, 
+    z: 1.4, 
     duration: 5, 
     yoyo: true,
     repeat: -1,  
@@ -190,7 +201,7 @@ function createPoint(lat, lng){
   })
   box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -.4))
 
-  sphere.add(box)
+  scene.add(box)
 
 }
 
@@ -212,26 +223,46 @@ createPoint(6.3562, 2.4278)
 createPoint(-33.8688, 151.2093)
 
 
-//Renderer
 
-const canvas = document.querySelector('.webgl');
-const renderer = new THREE.WebGLRenderer({canvas, 
-  antialias: true});
-renderer.setPixelRatio(window.devicePixelRatio)
-
-renderer.setSize(sizes.width, sizes.height)
-renderer.render(scene, camera)
 
 const mouse = {
   x: 0,
   y: 0,
 }
 
+
+const raycaster = new THREE.Raycaster();
+console.log(raycaster)
+console.log(scene.children)
+console.log(group.children.filter((mesh)=>{
+  return mesh.geometry.type === 'BoxGeometry'
+}))
+
+// Left off here, stopped tutoral around 16M of box data
+
 function animate(){
   requestAnimationFrame(animate)
   renderer.render(scene, camera)
   sphere.rotation.y += 0.003
   group.rotation.y = mouse.x
+
+  	// update the picking ray with the camera and pointer position
+	raycaster.setFromCamera( mouse, camera );
+
+	// calculate objects intersecting the picking ray
+	const intersects = raycaster.intersectObjects( group.children.filter(mesh =>{
+    return mesh.geometry.type === 'box'
+  }) );
+
+	for ( let i = 0; i < intersects.length; i ++ ) {
+    console.log("go")
+
+		// intersects[ i ].object.material.color.set( 0xff0000 );
+
+	}
+
+	renderer.render( scene, camera );
+
 }
 animate()
 
@@ -267,6 +298,6 @@ const loop = () => {
 
 loop()
 
-// const raycaster = new THREE.Raycaster();
-// console.log(raycaster)
+
+
 

@@ -48,19 +48,53 @@ nav ul{
 }
 
 .textbox{
+    position: relative;
     color: #BCD2F1;
-    border-style: solid;
     margin-top: 5vh;
-    width: 20vw;
-    height: 5vh;
+    width: 70vw;
+    height: 8vh;
     text-align: center;
     display: flex;
     justify-content: center;
     margin-left: auto;
     margin-right: auto;
     font-family: monospace;
-}
-
-.innertext{
     z-index: 1;
 }
+
+.holder{
+    position: relative;
+    display: flex;
+    width: 40vh;
+    border: 1px solid transparent; /* Set initial border to be transparent */
+    text-align: center;
+    /* border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px; */
+    z-index: 1;
+    justify-content: center;
+    margin-top: 80vh;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#thefile {
+    position: static; /* Set position to static so it's in the normal flow */
+    margin-bottom: 50px; /* Add some margin */
+}
+  
+#canvas {
+    /* width: 100%;  */
+    height: 20vh; /* Adjust height of canvas */
+    /* border-image: linear-gradient(to left, #743ad5, #d53a9d) 2; */
+}
+  
+audio {
+    /* display: flex; */
+    bottom: 50px;
+    width: calc(100%);
+    background-color: #F2F3F4;
+    /* border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px; */
+    border: 1px solid blue; /* Set initial border to be transparent */
+    /* border-image: linear-gradient(to left, #743ad5, #d53a9d) 25; */
+  }
