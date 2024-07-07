@@ -13,7 +13,8 @@ html{
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 1;
+    /* z-index: 1; */
+    /* height: 80vh; */
 }
 
 nav{
@@ -65,12 +66,13 @@ nav ul{
 .holder{
     position: relative;
     display: flex;
-    width: 40vh;
+    /* height: 20vh; */
     border: 1px solid transparent; 
     text-align: center;
     z-index: 1;
+    /* width: 60vw; */
     justify-content: center;
-    margin-top: 70vh;
+    margin-top: 5vh;
     margin-left: auto;
     margin-right: auto;
 }
@@ -78,13 +80,27 @@ nav ul{
 
   
 #canvas {
-    height: 20vh; 
+    position: relative;
+    display: flex;
+    height: 10vh; 
+    width: 80vw;
+    /* background-color: lightblue; */
+    backdrop-filter: blur(10px);
+    border-color: orange;
+    z-index: 1;
+    margin-top: 60vh;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
 }
   
 audio {
     width: calc(100%);
+    width: 80vw;
+    z-index: 1;
   }
 
 .song{
     background: red;
+    z-index: 1;
 }

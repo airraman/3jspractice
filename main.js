@@ -50,6 +50,14 @@ function playAnim() {
 }
 playAnim();
 
+const recordPlayer = document.getElementById('song')
+
+function playAudio(){
+  song.play()
+}
+
+recordPlayer.addEventListener("click", playAudio)
+
 const canvas = document.querySelector('.webgl');
 
 //Sizes 
