@@ -13,6 +13,7 @@
     "vite-plugin-string": "^1.2.3"
   },
   "dependencies": {
+    "audiomotion-analyzer": "^4.5.0",
     "gsap": "^3.12.5",
     "three": "^0.163.0"
   }

@@ -6,6 +6,8 @@ import vertexShader from './shaders/vertex.glsl'
 import fragmentShader from './shaders/fragment.glsl'
 import atmosphereVertex from './shaders/atmosphereVertex.glsl'
 import atmosphereFragment from './shaders/atmosphereFragment.glsl'
+import AudioMotionAnalyzer from 'audiomotion-analyzer';
+
 
 
 //Initiate Typewriter 
@@ -50,13 +52,78 @@ function playAnim() {
 }
 playAnim();
 
+//Begin Record Visualizer
+
 const recordPlayer = document.getElementById('song')
+const container = document.getElementById('canvas');
 
-function playAudio(){
-  song.play()
-}
+// const audioContext = new AudioContext();
 
-recordPlayer.addEventListener("click", playAudio)
+
+
+function playSong () {
+
+
+  console.log(recordPlayer.src)
+
+  var context = new AudioContext();
+  var src = context.createMediaElementSource(recordPlayer);
+  var analyser = context.createAnalyser();
+  
+  var ctx = container.getContext("2d");
+  
+  src.connect(analyser);
+  analyser.connect(context.destination);
+  
+  analyser.fftSize = 256;
+  
+  var bufferLength = analyser.frequencyBinCount;
+  console.log(bufferLength);
+  
+  var dataArray = new Uint8Array(bufferLength);
+  
+  var WIDTH = container.width;
+  var HEIGHT = container.height ;
+  
+  var barWidth = (WIDTH / bufferLength) * 2.5;
+  var barHeight;
+  var x = 0;
+  
+  function renderFrame() {
+    requestAnimationFrame(renderFrame);
+  
+    x = 0;
+  
+    analyser.getByteFrequencyData(dataArray);
+  
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  
+    for (var i = 0; i < bufferLength; i++) {
+      barHeight = dataArray[i];
+      
+      var r = barHeight + (25 * (i/bufferLength));
+      var g = 250 * (i/bufferLength);
+      var b = 50;
+  
+      ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
+      ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+  
+      x += barWidth + 1;
+    }
+  }
+  
+  renderFrame();
+
+
+};
+
+recordPlayer.addEventListener("play", playSong)
+
+
+
+
+//End Record Visualizer
 
 const canvas = document.querySelector('.webgl');
 

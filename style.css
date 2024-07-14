@@ -72,7 +72,7 @@ nav ul{
     z-index: 1;
     /* width: 60vw; */
     justify-content: center;
-    margin-top: 5vh;
+    margin-top: 2vh;
     margin-left: auto;
     margin-right: auto;
 }
@@ -85,7 +85,7 @@ nav ul{
     height: 10vh; 
     width: 80vw;
     /* background-color: lightblue; */
-    backdrop-filter: blur(40px);
+    /* backdrop-filter: blur(40px); */
     border-color: orange;
     z-index: 1;
     margin-top: 55vh;
@@ -100,7 +100,7 @@ audio {
     z-index: 1;
   }
 
-.song{
-    background: red;
+#song{
+    /* background: red; */
     z-index: 1;
 }
