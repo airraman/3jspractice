@@ -83,9 +83,9 @@ function playSong () {
   var dataArray = new Uint8Array(bufferLength);
   
   var WIDTH = container.width;
-  var HEIGHT = container.height ;
+  var HEIGHT = container.height * 1 ;
   
-  var barWidth = (WIDTH / bufferLength) * 2.5;
+  var barWidth = (WIDTH / bufferLength) * 1;
   var barHeight;
   var x = 0;
   
@@ -102,14 +102,14 @@ function playSong () {
     for (var i = 0; i < bufferLength; i++) {
       barHeight = dataArray[i];
       
-      var r = barHeight + (25 * (i/bufferLength));
-      var g = 250 * (i/bufferLength);
-      var b = 50;
+      var r = barHeight + (0 * (i/bufferLength));
+      var g = 120 * (i/bufferLength);
+      var b = 86;
   
       ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
       ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
   
-      x += barWidth + 1;
+      x += barWidth + .001;
     }
   }
   
@@ -280,7 +280,43 @@ function createPoint(lat, lng){
 
 }
 
-sphere.rotation.y = -Math.PI/6
+// function createPoint(lat, lng){
+
+//   const circle = new THREE.Mesh(
+//   new THREE.CircleGeometry( .2, 16, 5 ), 
+//   new THREE.MeshBasicMaterial({
+//     color: 0xffff00
+//   })
+//   )
+//   const latitude = (lat / 180) * Math.PI
+//   const longitude = (lng/ 180) * Math.PI
+//   const radius = 2
+
+//   const x = radius * Math.cos(latitude) * Math.sin(longitude)
+//   const y = radius * Math.sin(latitude)
+//   const z = radius * Math.cos(latitude) * Math.cos(longitude)
+
+//   circle.position.x = x
+//   circle.position.y = y
+//   circle.position.z = z 
+
+//   circle.lookAt(0,0,0)
+
+//   gsap.to(circle.scale, {
+//     z: .1, 
+//     // duration: 5, 
+//     // yoyo: true,
+//     // repeat: -1,  
+//     // ease: 'linear', 
+//     delay: Math.random()
+//   })
+//   circle.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -.4))
+
+//   scene.add(circle)
+
+// }
+
+// sphere.rotation.y = -Math.PI/6
 
 group.rotation.offset = {
   x: 0,
@@ -297,14 +333,10 @@ createPoint(37.8044, -122.2712)
 createPoint(6.3562, 2.4278)
 createPoint(-33.8688, 151.2093)
 
-
-
-
 const mouse = {
   x: 0,
   y: 0,
 }
-
 
 const raycaster = new THREE.Raycaster();
 console.log(raycaster)

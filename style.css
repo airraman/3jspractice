@@ -63,36 +63,34 @@ nav ul{
     z-index: 1;
 }
 
-.holder{
-    position: relative;
-    display: flex;
-    /* height: 20vh; */
-    border: 1px solid transparent; 
-    text-align: center;
-    z-index: 1;
-    /* width: 60vw; */
-    justify-content: center;
-    margin-top: 2vh;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-
   
 #canvas {
     position: relative;
     display: flex;
-    height: 10vh; 
+    height: 4vh; 
     width: 80vw;
-    /* background-color: lightblue; */
-    /* backdrop-filter: blur(40px); */
-    border-color: orange;
     z-index: 1;
-    margin-top: 55vh;
+    margin-top: 62vh;
     margin-left: auto;
     margin-right: auto;
     justify-content: center;
+    border-radius: 50px;
+    margin-bottom: 1.5vh;
+    /* background-image: conic-gradient(rgba(0,0,0,0), #1976ed, rgba(0,0,0,0) 25%); */
+
 }
+
+.holder{
+    position: relative;
+    display: flex;
+    border: 1px solid transparent; 
+    text-align: center;
+    z-index: 1;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
   
 audio {
     width: calc(100%);
