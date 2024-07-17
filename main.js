@@ -249,7 +249,9 @@ function createPoint(lat, lng){
   const box = new THREE.Mesh(
   new THREE.BoxGeometry(.1, .1, .8), 
   new THREE.MeshBasicMaterial({
-  color:'#BCD2F1'
+  color:'#BCD2F1', 
+  opacity: .4, 
+  transparent: true
   })
   )
   const latitude = (lat / 180) * Math.PI
@@ -276,7 +278,7 @@ function createPoint(lat, lng){
   })
   box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -.4))
 
-  scene.add(box)
+  group.add(box)
 
 }
 
@@ -316,7 +318,7 @@ function createPoint(lat, lng){
 
 // }
 
-// sphere.rotation.y = -Math.PI/6
+sphere.rotation.y = -Math.PI/6
 
 group.rotation.offset = {
   x: 0,
@@ -350,15 +352,23 @@ console.log(group.children.filter((mesh)=>{
 function animate(){
   requestAnimationFrame(animate)
   renderer.render(scene, camera)
-  sphere.rotation.y += 0.003
-  group.rotation.y = mouse.x
+  // sphere.rotation.y += 0.003
+  group.rotation.y = 0.003
 
-  	// update the picking ray with the camera and pointer position
+  if(mouse.x){
+    gsap.to(group.rotation, {
+      x: -mouse.y * 1.8,
+      y: mouse.x *1.8,
+      duration: 2
+    })
+  }
+
+  // update the picking ray with the camera and pointer position
 	raycaster.setFromCamera( mouse, camera );
 
 	// calculate objects intersecting the picking ray
-	const intersects = raycaster.intersectObjects( group.children.filter(mesh =>{
-    return mesh.geometry.type === 'box'
+	const intersects = raycaster.intersectObjects(group.children.filter(mesh =>{
+    return mesh.geometry.type === 'BoxGeometry'
   }) );
 
 	for ( let i = 0; i < intersects.length; i ++ ) {
@@ -373,10 +383,10 @@ function animate(){
 }
 animate()
 
-addEventListener('mousemove',() =>{
-  mouse.x = (event.clientX/innerWidth) * 2 - 1
-  mouse.y = -(event.clientY/innerHeight) * 2 + 1
-  console.log(mouse)
+canvas.addEventListener('mousemove',(event) =>{
+  mouse.x = ((event.clientX - innerWidth ))/(innerWidth) +.5
+  mouse.y = -(event.clientY/innerHeight) +.5
+  console.log(mouse.x, mouse.y)
 })
 
 //Controls 
