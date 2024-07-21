@@ -169,7 +169,7 @@ const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.Sha
 
 //creating atmosphere object
 
-const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.ShaderMaterial({  
+const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(2.5, 20, 20), new THREE.ShaderMaterial({  
   vertexShader: atmosphereVertex,
   fragmentShader: atmosphereFragment, 
   blending: THREE.AdditiveBlending,
@@ -247,7 +247,7 @@ scene.add(light)
 function createPoint(lat, lng){
 
   const box = new THREE.Mesh(
-  new THREE.BoxGeometry(.1, .1, .8), 
+  new THREE.BoxGeometry(.25, .25, .8), 
   new THREE.MeshBasicMaterial({
   color:'#BCD2F1', 
   opacity: .4, 
@@ -262,14 +262,17 @@ function createPoint(lat, lng){
   const y = radius * Math.sin(latitude)
   const z = radius * Math.cos(latitude) * Math.cos(longitude)
 
-  box.position.x = x
-  box.position.y = y
+  box.position.x = x 
+  box.position.y = y  
   box.position.z = z 
+
+  console.log(box.position.x)
+  console.log(box.position.y)
 
   box.lookAt(0,0,0)
 
   gsap.to(box.scale, {
-    z: 1.4, 
+    z: 1, 
     duration: 5, 
     yoyo: true,
     repeat: -1,  
@@ -324,16 +327,32 @@ group.rotation.offset = {
   x: 0,
   y: 0
 }
+//PARIS
+createPoint(50.3575, 60.614)
 
-createPoint(48.8575, 2.3514)
-createPoint(52.3676, 4.9041)
-createPoint(51.5072, -0.1276)
-createPoint(31.6225, -7.9898)
-createPoint(38.7223, -9.1393)
-createPoint(40.6958, -73.9171)
-createPoint(37.8044, -122.2712)
-createPoint(6.3562, 2.4278)
-createPoint(-33.8688, 151.2093)
+//AMSTERDAM
+createPoint(56.3676, 66.9041)
+
+//LONDION
+createPoint(56.5072, 60.1276)
+
+//CASABLANCA
+createPoint(30.6225, 55.9898)
+
+//LISBON
+createPoint(40.7223, 50.1393)
+
+//BROOKLYN
+createPoint(38.6958, -18.9171)
+
+//LOS ANGELES
+createPoint(37.8044, -58.2712)
+
+//BENIN
+createPoint(6.3562, 55.4278)
+
+//SYDNEY
+createPoint(-33.8688, 208.2093)
 
 const mouse = {
   x: 0,
@@ -395,7 +414,7 @@ const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true 
 controls.enablePan = false
 controls.enableZoom = false
-controls.autoRotate = true
+// controls.autoRotate = true
 // controls.autoRotateSpeed = 5
 
 //Resize 
