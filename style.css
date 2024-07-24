@@ -61,6 +61,18 @@ nav ul{
     z-index: 1;
 }
 
+#popUpElement{
+    z-index: 3;
+    position: relative;
+    width: 70vw;
+    color: black;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    background-color: #BCD2F1;
+    border-color: red;
+}
+
   
 #canvas {
     position: relative;
@@ -100,3 +112,4 @@ audio {
     /* background: red; */
     z-index: 1;
 }
+

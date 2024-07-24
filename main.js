@@ -360,13 +360,14 @@ const mouse = {
 }
 
 const raycaster = new THREE.Raycaster();
-console.log(raycaster)
-console.log(scene.children)
-console.log(group.children.filter((mesh)=>{
-  return mesh.geometry.type === 'BoxGeometry'
-}))
+const popUpEl = document.querySelector('#popUpElement')
 
-// Left off here, stopped tutoral around 16M of box data
+
+
+// console.log(group.children.filter((mesh)=>{
+//   return mesh.geometry.type === 'BoxGeometry'
+// }))
+
 
 function animate(){
   requestAnimationFrame(animate)
@@ -390,10 +391,21 @@ function animate(){
     return mesh.geometry.type === 'BoxGeometry'
   }) );
 
-	for ( let i = 0; i < intersects.length; i ++ ) {
-    console.log("go")
+  group.children.forEach((mesh) => {
+    mesh.material.opacity = .4
+    console.log(mesh)
+  } )
 
-		// intersects[ i ].object.material.color.set( 0xff0000 );
+  gsap.set(popUpEl, {
+    display: 'none'
+  })
+
+	for ( let i = 0; i < intersects.length; i ++ ) {
+    intersects[ i ].object.material.opacity = 1
+    gsap.set(popUpEl, {
+      display: 'block'
+    })
+
 
 	}
 
@@ -415,7 +427,7 @@ controls.enableDamping = true
 controls.enablePan = false
 controls.enableZoom = false
 controls.autoRotate = true
-controls.autoRotateSpeed = 5
+controls.autoRotateSpeed = 0
 
 //Resize 
 window.addEventListener('resize', ()=>{
