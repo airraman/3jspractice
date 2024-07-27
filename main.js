@@ -6,8 +6,28 @@ import vertexShader from './shaders/vertex.glsl'
 import fragmentShader from './shaders/fragment.glsl'
 import atmosphereVertex from './shaders/atmosphereVertex.glsl'
 import atmosphereFragment from './shaders/atmosphereFragment.glsl'
+import atmosphereFragmentTwo from './shaders/atmosphereFragmentTwo.glsl'
+import atmosphereFragmentThree from './shaders/atmosphereFragmentThree.glsl'
+import atmosphereFragmentFour from './shaders/atmosphereFragmentFour.glsl'
+// const module2 = import('./shaders/atmosphereFragmentTwo.glsl')
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 
+
+var currentFragment = atmosphereFragmentFour
+
+function colorChanger(currentFragment){
+
+  console.log("here I am")
+
+   currentFragment = atmosphereFragmentTwo
+
+  //  setTimeout(()=>{
+  //   currentFragment = atmosphereFragmentThree
+  //  }, 1)
+
+   console.log(currentFragment)
+
+}
 
 
 //Initiate Typewriter 
@@ -59,10 +79,9 @@ const container = document.getElementById('canvas');
 
 // const audioContext = new AudioContext();
 
-
-
 function playSong () {
 
+  // colorChanger()
 
   console.log(recordPlayer.src)
 
@@ -112,14 +131,11 @@ function playSong () {
       x += barWidth + .001;
     }
   }
-  
   renderFrame();
-
-
 };
 
 recordPlayer.addEventListener("play", playSong)
-
+recordPlayer.addEventListener("play", colorChanger)
 
 
 
@@ -171,7 +187,7 @@ const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.Sha
 
 const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(2.5, 20, 20), new THREE.ShaderMaterial({  
   vertexShader: atmosphereVertex,
-  fragmentShader: atmosphereFragment, 
+  fragmentShader: currentFragment, 
   blending: THREE.AdditiveBlending,
   side: THREE.BackSide
  }))
@@ -213,7 +229,7 @@ starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerti
 console.log(starVertices)
 //creates stars on one half of the screen
 
-//population other side of screen
+//populating stars on other side of screen
 const starGeometryTwo = new THREE.BufferGeometry()
 
 const starMaterialTwo = new THREE.PointsMaterial({
@@ -225,26 +241,23 @@ const starVerticesTwo = []
    const x = (Math.random() - 0.5) * -2000
    const y = (Math.random() - 0.5) * -2000
    const z = -Math.random() * -3000
-   starVertices.push(x, y, z)
+   starVerticesTwo.push(x, y, z)
  }
 
- starGeometryTwo.setAttribute(
-  'position',
-  new THREE.Float32BufferAttribute(starVertices, 3)
-)
+starGeometryTwo.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3))
 
 const starsTwo = new THREE.Points(starGeometryTwo, starMaterialTwo)
 scene.add(starsTwo)
 
 starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerticesTwo, 3))
-//population other side of screen
+//populating stars on other side of screen
 
 //Light 
 const light = new THREE.PointLight(0xffffff, 100, 0)
 light.position.set(0, 10, 10)
 scene.add(light)
 
-function createPoint(lat, lng){
+function createPoint({lat, lng, Title, Location}){
 
   const box = new THREE.Mesh(
   new THREE.BoxGeometry(.25, .25, .8), 
@@ -266,9 +279,6 @@ function createPoint(lat, lng){
   box.position.y = y  
   box.position.z = z 
 
-  console.log(box.position.x)
-  console.log(box.position.y)
-
   box.lookAt(0,0,0)
 
   gsap.to(box.scale, {
@@ -280,6 +290,9 @@ function createPoint(lat, lng){
     delay: Math.random()
   })
   box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -.4))
+
+  box.Title = Title
+  box.Location = Location
 
   group.add(box)
 
@@ -327,32 +340,35 @@ group.rotation.offset = {
   x: 0,
   y: 0
 }
+
+let paris = [50.3575, 60.614]
+
 //PARIS
-createPoint(50.3575, 60.614)
+createPoint({lat: 50.3575, lng: 60.614, Title: "6am in Paris", Location: "paris"})
 
-//AMSTERDAM
-createPoint(56.3676, 66.9041)
+// //AMSTERDAM
+// createPoint(56.3676, 66.9041)
 
-//LONDION
-createPoint(56.5072, 60.1276)
+//LONDON
+createPoint({lat: 56.5072, lng: 60.1276, Title: "memory lane", Location: "london"})
 
-//CASABLANCA
-createPoint(30.6225, 55.9898)
+// //CASABLANCA
+// createPoint(30.6225, 55.9898)
 
 //LISBON
-createPoint(40.7223, 50.1393)
+createPoint({lat: 40.7223, lng: 50.1393, Title: "summer in lisbon", Location: "lisbon"})
 
 //BROOKLYN
-createPoint(38.6958, -18.9171)
+createPoint({lat: 38.6958, lng: -18.9171, Title: 'bushwick yacht club', Location: "bushwick"})
 
 //LOS ANGELES
-createPoint(37.8044, -58.2712)
+createPoint({lat: 37.8044, lng: -58.2712, Title: "somewhere out in oakland", Location: "LA"})
 
 //BENIN
-createPoint(6.3562, 55.4278)
+createPoint({lat: 6.3562, lng: 55.4278, Title: "sleeptalking", Location: "west africa"})
 
 //SYDNEY
-createPoint(-33.8688, 208.2093)
+createPoint({lat: -33.8688, lng: 208.2093, Title: "skyclub", Location: "sydney"})
 
 const mouse = {
   x: 0,
@@ -361,12 +377,8 @@ const mouse = {
 
 const raycaster = new THREE.Raycaster();
 const popUpEl = document.querySelector('#popUpElement')
-
-
-
-// console.log(group.children.filter((mesh)=>{
-//   return mesh.geometry.type === 'BoxGeometry'
-// }))
+const songTitle = document.querySelector('#songTitle')
+const songLocation = document.querySelector('#songLocation')
 
 
 function animate(){
@@ -383,7 +395,6 @@ function animate(){
     })
   }
 
-  // update the picking ray with the camera and pointer position
 	raycaster.setFromCamera( mouse, camera );
 
 	// calculate objects intersecting the picking ray
@@ -393,19 +404,26 @@ function animate(){
 
   group.children.forEach((mesh) => {
     mesh.material.opacity = .4
-    console.log(mesh)
+    // console.log(mesh)
   } )
 
   gsap.set(popUpEl, {
-    display: 'none'
+    // display: 'none'
   })
 
 	for ( let i = 0; i < intersects.length; i ++ ) {
-    intersects[ i ].object.material.opacity = 1
+    const box = intersects[ i ].object
+    box.material.opacity = 1
     gsap.set(popUpEl, {
       display: 'block'
     })
 
+    // console.log(box)
+    console.log(atmosphere.material.fragmentShader)
+  
+
+    songLocation.innerHTML = box.Location
+    songTitle.innerHTML = box.Title
 
 	}
 
@@ -427,7 +445,7 @@ controls.enableDamping = true
 controls.enablePan = false
 controls.enableZoom = false
 controls.autoRotate = true
-controls.autoRotateSpeed = 0
+controls.autoRotateSpeed = 2
 
 //Resize 
 window.addEventListener('resize', ()=>{

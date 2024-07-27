@@ -48,7 +48,18 @@ nav ul{
 
 .textbox{
     position: relative;
-    color: #BCD2F1;
+    animation: pulsate 2.5s infinite alternate;   
+    color: #fff;
+    text-shadow:
+    0 0 4px #fff,
+    0 0 11px #fff,
+    0 0 19px #fff,
+    0 0 40px #BCD2F1,
+    0 0 80px #BCD2F1,
+    0 0 90px #BCD2F1,
+    0 0 100px #BCD2F1,
+    0 0 150px #BCD2F1;  
+
     margin-top: 5vh;
     width: 70vw;
     height: 8vh;
@@ -64,14 +75,65 @@ nav ul{
 #popUpElement{
     z-index: 3;
     position: relative;
-    width: 70vw;
-    color: black;
+    width: 80vw;
+    color: #fff;
+    text-shadow:
+    0 0 4px #fff,
+    0 0 11px #fff,
+    0 0 19px #fff,
+    0 0 40px #BCD2F1,
+    0 0 80px #BCD2F1,
+    0 0 90px #BCD2F1,
+    0 0 100px #BCD2F1,
+    0 0 150px #BCD2F1;
     margin-left: auto;
     margin-right: auto;
     text-align: center;
-    background-color: #BCD2F1;
+    /* background-color: #BCD2F1; */
+    font-family: monospace;
     border-color: red;
+    border-radius:  50px; ;
+    /* opacity: .7; */
+    animation: pulsate 2.5s infinite alternate;   
+    color: #fff;
+    text-shadow:
+    0 0 4px #fff,
+    0 0 11px #fff,
+    0 0 19px #fff,
+    0 0 40px #BCD2F1,
+    0 0 80px #BCD2F1,
+    0 0 90px #BCD2F1,
+    0 0 100px #BCD2F1,
+    0 0 150px #BCD2F1;  
+
 }
+
+@keyframes pulsate {
+    100% {
+      /* Larger blur radius */
+      text-shadow:
+        0 0 4px #fff,
+        0 0 11px #fff,
+        0 0 19px #fff,
+        0 0 40px #BCD2F1,
+        0 0 80px #BCD2F1,
+        0 0 90px #BCD2F1,
+        0 0 100px #BCD2F1,
+        0 0 150px #BCD2F1;
+    }
+    0% {
+      /* Smaller blur radius */
+      text-shadow:
+        0 0 2px #fff,
+        0 0 4px #fff,
+        0 0 6px #fff,
+    0 0 40px #BCD2F1,
+    0 0 80px #BCD2F1,
+    0 0 90px #BCD2F1,
+    0 0 100px #BCD2F1,
+    0 0 150px #BCD2F1;
+    }
+  }
 
   
 #canvas {
@@ -106,6 +168,7 @@ audio {
     width: calc(100%);
     width: 80vw;
     z-index: 1;
+    opacity: .7;
   }
 
 #song{
