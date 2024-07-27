@@ -15,51 +15,9 @@ html{
     left: 0;
 }
 
-nav{
-    color: white;
-    z-index: 2;
-    position: relative;
-    padding: 4rem 8rem;
-    display: flex;
-    justify-content: space-between;
-}
-
-nav a{
-    text-decoration: none;
-    color: white;
-    font-weight: bold;
-}
-
-nav ul{
-    list-style: none;
-    display: flex;
-    gap: 4rem;
-}
-
-.title{
-    color: white;
-    z-index: 2;
-    position: absolute;
-    font-size: 3rem;
-    left: 50%;
-    top: 75%;
-    transform: translate(-50%, -75%);
-}
 
 .textbox{
     position: relative;
-    animation: pulsate 2.5s infinite alternate;   
-    color: #fff;
-    text-shadow:
-    0 0 4px #fff,
-    0 0 11px #fff,
-    0 0 19px #fff,
-    0 0 40px #BCD2F1,
-    0 0 80px #BCD2F1,
-    0 0 90px #BCD2F1,
-    0 0 100px #BCD2F1,
-    0 0 150px #BCD2F1;  
-
     margin-top: 5vh;
     width: 70vw;
     height: 8vh;
@@ -70,12 +28,7 @@ nav ul{
     margin-right: auto;
     font-family: monospace;
     z-index: 1;
-}
-
-#popUpElement{
-    z-index: 3;
-    position: relative;
-    width: 80vw;
+    animation: pulsate 1.0s infinite alternate;   
     color: #fff;
     text-shadow:
     0 0 4px #fff,
@@ -85,16 +38,22 @@ nav ul{
     0 0 80px #BCD2F1,
     0 0 90px #BCD2F1,
     0 0 100px #BCD2F1,
-    0 0 150px #BCD2F1;
+    0 0 150px #BCD2F1;  
+}
+
+#popUpElement{
+    z-index: 3;
+    position: relative;
+    width: 80vw;
+    height: 2vh;
+    color: #fff;
     margin-left: auto;
     margin-right: auto;
     text-align: center;
-    /* background-color: #BCD2F1; */
     font-family: monospace;
     border-color: red;
     border-radius:  50px; ;
-    /* opacity: .7; */
-    animation: pulsate 2.5s infinite alternate;   
+    animation: pulsate 1.0s infinite alternate;   
     color: #fff;
     text-shadow:
     0 0 4px #fff,
@@ -107,6 +66,43 @@ nav ul{
     0 0 150px #BCD2F1;  
 
 }
+
+#canvas {
+    position: relative;
+    display: flex;
+    height: 4vh; 
+    width: 80vw;
+    z-index: 1;
+    margin-top: 62vh;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+    border-radius: 50px;
+    margin-bottom: 1.5vh;
+}
+
+.holder{
+    position: relative;
+    display: flex;
+    border: 1px solid transparent; 
+    text-align: center;
+    z-index: 1;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+audio {
+    width: calc(100%);
+    width: 80vw;
+    z-index: 1;
+    opacity: .7;
+  }
+
+#song{
+    z-index: 1;
+}
+
 
 @keyframes pulsate {
     100% {
@@ -134,45 +130,3 @@ nav ul{
     0 0 150px #BCD2F1;
     }
   }
-
-  
-#canvas {
-    position: relative;
-    display: flex;
-    height: 4vh; 
-    width: 80vw;
-    z-index: 1;
-    margin-top: 62vh;
-    margin-left: auto;
-    margin-right: auto;
-    justify-content: center;
-    border-radius: 50px;
-    margin-bottom: 1.5vh;
-    /* background-image: conic-gradient(rgba(0,0,0,0), #1976ed, rgba(0,0,0,0) 25%); */
-
-}
-
-.holder{
-    position: relative;
-    display: flex;
-    border: 1px solid transparent; 
-    text-align: center;
-    z-index: 1;
-    justify-content: center;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-  
-audio {
-    width: calc(100%);
-    width: 80vw;
-    z-index: 1;
-    opacity: .7;
-  }
-
-#song{
-    /* background: red; */
-    z-index: 1;
-}
-
