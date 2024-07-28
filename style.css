@@ -73,12 +73,32 @@ html{
     height: 4vh; 
     width: 80vw;
     z-index: 1;
-    margin-top: 62vh;
+    margin-top: 30vh;
     margin-left: auto;
     margin-right: auto;
     justify-content: center;
     border-radius: 50px;
     margin-bottom: 1.5vh;
+}
+
+.circle {
+    width: 30px;
+    height: 30px;
+    border: 1px solid lightblue;
+    border-radius: 50%;
+    margin: auto;
+    z-index: 1;
+    position: relative;
+    margin-top: 33vh;
+    box-shadow:     
+    0 0 4px #fff,
+    /* 0 0 11px #fff, */
+    /* 0 0 19px #fff, */
+    0 0 40px #BCD2F1,
+    0 0 80px #BCD2F1,
+    0 0 90px #BCD2F1,
+    0 0 100px #BCD2F1,
+    0 0 150px #BCD2F1;
 }
 
 .holder{
@@ -129,4 +149,5 @@ audio {
     0 0 100px #BCD2F1,
     0 0 150px #BCD2F1;
     }
+    
   }

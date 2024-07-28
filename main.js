@@ -13,19 +13,30 @@ import atmosphereFragmentFour from './shaders/atmosphereFragmentFour.glsl'
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 
 
-var currentFragment = atmosphereFragmentFour
+let currentFragment = atmosphereFragmentFour
 
 function colorChanger(currentFragment){
 
+  currentFragment = atmosphereFragmentTwo
+
   console.log("here I am")
 
-   currentFragment = atmosphereFragmentTwo
+  return function () {
+    if (!hasBeenCalled) {
+        console.log('Function called!');
+        hasBeenCalled = true;
+    } else {
+        console.log('Function can only be called once.');
+    }
+};
+
+   
 
   //  setTimeout(()=>{
   //   currentFragment = atmosphereFragmentThree
   //  }, 1)
 
-   console.log(currentFragment)
+  //  console.log(currentFragment)
 
 }
 
@@ -135,7 +146,7 @@ function playSong () {
 };
 
 recordPlayer.addEventListener("play", playSong)
-recordPlayer.addEventListener("play", colorChanger)
+// recordPlayer.addEventListener("play", colorChanger)
 
 
 
@@ -375,6 +386,21 @@ const mouse = {
   y: 0,
 }
 
+//Controls 
+
+const controls = new OrbitControls(camera, canvas)
+controls.enableDamping = true 
+controls.enablePan = false
+controls.enableZoom = false
+controls.autoRotate = true
+controls.autoRotateSpeed = 2
+
+addEventListener("mousemove", (event) => {
+  console.log(event)
+  controls.autoRotate = true
+});
+
+
 const raycaster = new THREE.Raycaster();
 const popUpEl = document.querySelector('#popUpElement')
 const songTitle = document.querySelector('#songTitle')
@@ -386,6 +412,9 @@ function animate(){
   renderer.render(scene, camera)
   // sphere.rotation.y += 0.003
   group.rotation.y = 0.003
+
+  controls.autoRotate = true
+
 
   if(mouse.x){
     gsap.to(group.rotation, {
@@ -418,6 +447,11 @@ function animate(){
       display: 'block'
     })
 
+    controls.autoRotate = false
+    // currentFragment = atmosphereFragmentTwo
+    colorChanger()
+
+
     // console.log(box)
     console.log(atmosphere.material.fragmentShader)
   
@@ -432,20 +466,15 @@ function animate(){
 }
 animate()
 
+//explore on click
+
 canvas.addEventListener('mousemove',(event) =>{
   mouse.x = ((event.clientX - innerWidth ))/(innerWidth) +.5
   mouse.y = -(event.clientY/innerHeight) +.5
   console.log(mouse.x, mouse.y)
 })
 
-//Controls 
 
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true 
-controls.enablePan = false
-controls.enableZoom = false
-controls.autoRotate = true
-controls.autoRotateSpeed = 2
 
 //Resize 
 window.addEventListener('resize', ()=>{
