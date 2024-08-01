@@ -407,7 +407,7 @@ controls.enableDamping = true
 controls.enablePan = false
 controls.enableZoom = false
 controls.autoRotate = true
-controls.autoRotateSpeed = 2
+controls.autoRotateSpeed = 1.2
 
 addEventListener("mousemove", (event) => {
   console.log(event)
@@ -489,8 +489,6 @@ canvas.addEventListener('mousemove',(event) =>{
   mouse.y = -(event.clientY/innerHeight) +.5
   console.log(mouse.x, mouse.y)
 })
-
-
 
 //Resize 
 window.addEventListener('resize', ()=>{
