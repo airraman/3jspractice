@@ -13,6 +13,16 @@ import atmosphereFragmentFour from './shaders/atmosphereFragmentFour.glsl'
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 
 
+const musicLibary = {
+  paris: "/paris.mp3", 
+  sydney: "/skyclub.mp3", 
+  brooklyn: "/yachtclub.mp3", 
+  london: "/memorylane.mp3", 
+  lisbon: "/lisbon.mp3", 
+  oakland: "/oakland.mp3"
+}
+
+
 let currentFragment = atmosphereFragmentFour
 
 function colorChanger(currentFragment){
@@ -93,6 +103,8 @@ const container = document.getElementById('canvas');
 function playSong () {
 
   // colorChanger()
+
+  
 
   console.log(recordPlayer.src)
 
@@ -268,7 +280,7 @@ const light = new THREE.PointLight(0xffffff, 100, 0)
 light.position.set(0, 10, 10)
 scene.add(light)
 
-function createPoint({lat, lng, Title, Location}){
+function createPoint({lat, lng, Title, Location, audio}){
 
   const box = new THREE.Mesh(
   new THREE.BoxGeometry(.25, .25, .8), 
@@ -304,6 +316,8 @@ function createPoint({lat, lng, Title, Location}){
 
   box.Title = Title
   box.Location = Location
+  box.audio = audio
+
 
   group.add(box)
 
@@ -352,34 +366,34 @@ group.rotation.offset = {
   y: 0
 }
 
-let paris = [50.3575, 60.614]
+// let paris = [50.3575, 60.614]
 
 //PARIS
-createPoint({lat: 50.3575, lng: 60.614, Title: "6am in Paris", Location: "paris"})
+createPoint({lat: 50.3575, lng: 60.614, Title: "6am in Paris", Location: "paris", audio: musicLibary.paris })
 
 // //AMSTERDAM
 // createPoint(56.3676, 66.9041)
 
 //LONDON
-createPoint({lat: 56.5072, lng: 60.1276, Title: "memory lane", Location: "london"})
+createPoint({lat: 56.5072, lng: 60.1276, Title: "memory lane", Location: "london", audio: musicLibary.london})
 
 // //CASABLANCA
 // createPoint(30.6225, 55.9898)
 
 //LISBON
-createPoint({lat: 40.7223, lng: 50.1393, Title: "summer in lisbon", Location: "lisbon"})
+createPoint({lat: 40.7223, lng: 50.1393, Title: "summer in lisbon", Location: "lisbon", audio: musicLibary.lisbon})
 
 //BROOKLYN
-createPoint({lat: 38.6958, lng: -18.9171, Title: 'bushwick yacht club', Location: "bushwick"})
+createPoint({lat: 38.6958, lng: -18.9171, Title: 'bushwick yacht club', Location: "bushwick", audio: musicLibary.brooklyn})
 
 //LOS ANGELES
-createPoint({lat: 37.8044, lng: -58.2712, Title: "somewhere out in oakland", Location: "LA"})
+createPoint({lat: 37.8044, lng: -58.2712, Title: "somewhere out in oakland", Location: "LA", audio: musicLibary.oakland})
 
-//BENIN
-createPoint({lat: 6.3562, lng: 55.4278, Title: "sleeptalking", Location: "west africa"})
+// //BENIN
+// createPoint({lat: 6.3562, lng: 55.4278, Title: "sleeptalking", Location: "west africa", audio: musicLibary.w})
 
 //SYDNEY
-createPoint({lat: -33.8688, lng: 208.2093, Title: "skyclub", Location: "sydney"})
+createPoint({lat: -33.8688, lng: 208.2093, Title: "skyclub", Location: "sydney", audio: musicLibary.sydney})
 
 const mouse = {
   x: 0,
@@ -458,6 +472,8 @@ function animate(){
 
     songLocation.innerHTML = box.Location
     songTitle.innerHTML = box.Title
+    song.src = box.audio
+    console.log(box.audio)
 
 	}
 
