@@ -100,6 +100,8 @@ const container = document.getElementById('canvas');
 
 // const audioContext = new AudioContext();
 
+
+
 function playSong () {
 
   // colorChanger()
@@ -120,7 +122,7 @@ function playSong () {
   analyser.fftSize = 256;
   
   var bufferLength = analyser.frequencyBinCount;
-  console.log(bufferLength);
+  // console.log(bufferLength);
   
   var dataArray = new Uint8Array(bufferLength);
   
@@ -283,7 +285,7 @@ scene.add(light)
 function createPoint({lat, lng, Title, Location, audio}){
 
   const box = new THREE.Mesh(
-  new THREE.BoxGeometry(.25, .25, .8), 
+  new THREE.BoxGeometry(.25, .25, .25), 
   new THREE.MeshBasicMaterial({
   color:'#BCD2F1', 
   opacity: .4, 
@@ -292,7 +294,7 @@ function createPoint({lat, lng, Title, Location, audio}){
   )
   const latitude = (lat / 180) * Math.PI
   const longitude = (lng/ 180) * Math.PI
-  const radius = 2
+  const radius = 1.5
 
   const x = radius * Math.cos(latitude) * Math.sin(longitude)
   const y = radius * Math.sin(latitude)
@@ -305,7 +307,7 @@ function createPoint({lat, lng, Title, Location, audio}){
   box.lookAt(0,0,0)
 
   gsap.to(box.scale, {
-    z: 1, 
+    z: 1.5, 
     duration: 5, 
     yoyo: true,
     repeat: -1,  
@@ -446,9 +448,11 @@ function animate(){
   }) );
 
   group.children.forEach((mesh) => {
-    mesh.material.opacity = .4
+    mesh.material.opacity = .8
     // console.log(mesh)
   } )
+
+
 
   gsap.set(popUpEl, {
     // display: 'none'
@@ -461,20 +465,32 @@ function animate(){
       display: 'block'
     })
 
+    //This function needs to be called one time, and then cancelled out so that it stops firing continuously 
+
     controls.autoRotate = false
-    // currentFragment = atmosphereFragmentTwo
-    colorChanger()
+    camera.lookAt(10,10,10)
 
 
     // console.log(box)
-    console.log(atmosphere.material.fragmentShader)
-  
 
     songLocation.innerHTML = box.Location
     songTitle.innerHTML = box.Title
     song.src = box.audio
-    console.log(box.audio)
 
+    console.log( song.src)
+
+
+    return 
+    // console.log(box.audio)
+
+    // function playTrack(){
+    //   recordPlayer.play()
+    // }
+
+    // box.addEventListener("click", playTrack)
+    // box.addEventListener("click", () => {
+    // recordPlayer.play(box.audio)
+    //  })
 	}
 
 	renderer.render( scene, camera );
