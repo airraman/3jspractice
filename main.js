@@ -97,7 +97,7 @@ playAnim();
 
 const recordPlayer = document.getElementById('song')
 const container = document.getElementById('canvas');
-const songSelector = document.getElementById('')
+const songSelector = document.getElementsByClassName('circle')
 
 // const audioContext = new AudioContext();
 
@@ -430,22 +430,32 @@ function animate(){
     controls.autoRotate = false
     
     // console.log("still setting music data")
+
+    //need to wrap this in a conditional
+
+    if(songLocation.innerHTML != box.Location){
+
+      songLocation.innerHTML = box.Location
+      songTitle.innerHTML = box.Title
+      song.src = box.audio
+
+    }
     
-    songLocation.innerHTML = box.Location
-    songTitle.innerHTML = box.Title
-    song.src = box.audio
+
 
     recordPlayer.play()
-    camera.lookAt(10,10,10)
-    return 
-    
-
+    console.log(raycaster.ray.direction)
+    console.log(camera)
+    console.log(sphere)
+    console.log(scene)
+    console.log(group)
+    raycaster.ray.direction.x = 0
+    raycaster.ray.direction.y = 0
+    raycaster.ray.direction.z = 0
+    console.log(raycaster.ray.direction)
     console.log(song.src)
-    
 
-   
-
-    
+    return     
 	}
 
 
