@@ -97,6 +97,7 @@ playAnim();
 
 const recordPlayer = document.getElementById('song')
 const container = document.getElementById('canvas');
+const songSelector = document.getElementById('')
 
 // const audioContext = new AudioContext();
 
@@ -105,9 +106,6 @@ const container = document.getElementById('canvas');
 function playSong () {
 
   // colorChanger()
-
-  
-
   console.log(recordPlayer.src)
 
   var context = new AudioContext();
@@ -160,7 +158,6 @@ function playSong () {
 };
 
 recordPlayer.addEventListener("play", playSong)
-// recordPlayer.addEventListener("play", colorChanger)
 
 
 
@@ -325,41 +322,6 @@ function createPoint({lat, lng, Title, Location, audio}){
 
 }
 
-// function createPoint(lat, lng){
-
-//   const circle = new THREE.Mesh(
-//   new THREE.CircleGeometry( .2, 16, 5 ), 
-//   new THREE.MeshBasicMaterial({
-//     color: 0xffff00
-//   })
-//   )
-//   const latitude = (lat / 180) * Math.PI
-//   const longitude = (lng/ 180) * Math.PI
-//   const radius = 2
-
-//   const x = radius * Math.cos(latitude) * Math.sin(longitude)
-//   const y = radius * Math.sin(latitude)
-//   const z = radius * Math.cos(latitude) * Math.cos(longitude)
-
-//   circle.position.x = x
-//   circle.position.y = y
-//   circle.position.z = z 
-
-//   circle.lookAt(0,0,0)
-
-//   gsap.to(circle.scale, {
-//     z: .1, 
-//     // duration: 5, 
-//     // yoyo: true,
-//     // repeat: -1,  
-//     // ease: 'linear', 
-//     delay: Math.random()
-//   })
-//   circle.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -.4))
-
-//   scene.add(circle)
-
-// }
 
 sphere.rotation.y = -Math.PI/6
 
@@ -428,9 +390,7 @@ function animate(){
   renderer.render(scene, camera)
   // sphere.rotation.y += 0.003
   group.rotation.y = 0.003
-
   controls.autoRotate = true
-
 
   if(mouse.x){
     gsap.to(group.rotation, {
@@ -468,30 +428,29 @@ function animate(){
     //This function needs to be called one time, and then cancelled out so that it stops firing continuously 
 
     controls.autoRotate = false
-    camera.lookAt(10,10,10)
-
-
-    // console.log(box)
-
+    
+    // console.log("still setting music data")
+    
     songLocation.innerHTML = box.Location
     songTitle.innerHTML = box.Title
     song.src = box.audio
 
-    console.log( song.src)
-
-
+    recordPlayer.play()
+    camera.lookAt(10,10,10)
     return 
-    // console.log(box.audio)
+    
 
-    // function playTrack(){
-    //   recordPlayer.play()
-    // }
+    console.log(song.src)
+    
 
-    // box.addEventListener("click", playTrack)
-    // box.addEventListener("click", () => {
-    // recordPlayer.play(box.audio)
-    //  })
+   
+
+    
 	}
+
+
+
+  
 
 	renderer.render( scene, camera );
 
