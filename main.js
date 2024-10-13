@@ -371,7 +371,7 @@ controls.enableDamping = true
 controls.enablePan = false
 controls.enableZoom = false
 controls.autoRotate = true
-controls.autoRotateSpeed = 1.2
+controls.autoRotateSpeed = 2.2
 
 addEventListener("mousemove", (event) => {
   console.log(event)
@@ -412,8 +412,6 @@ function animate(){
     // console.log(mesh)
   } )
 
-
-
   gsap.set(popUpEl, {
     // display: 'none'
   })
@@ -438,10 +436,6 @@ function animate(){
     recordPlayer.play()
     return     
 	}
-
-
-
-  
 
 	renderer.render( scene, camera );
 
