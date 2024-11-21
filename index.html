@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.jpeg" />
@@ -7,6 +8,14 @@
     <title>SongMap.io</title>
   </head>
   <body>
+    <div class="form-popup" id="myForm">
+      <form class="form-container">
+        <h1>Login</h1>
+        <label for="email"><b>Phone Number</b></label>
+        <input type="text" placeholder="Enter Phone Number" name="email" required>
+        <button type="button" id="submitButton" class="btn cancel" onclick="closeForm()">Close</button>
+      </form>
+    </div>
     <canvas class="webgl"></canvas>
     <div class="textbox">
       <h2 class="innertext"></h2>

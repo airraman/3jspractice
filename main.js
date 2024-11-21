@@ -13,6 +13,14 @@ import atmosphereFragmentFour from './shaders/atmosphereFragmentFour.glsl'
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 
 
+const login = document.getElementById("submitButton")
+const popUpForm = document.getElementById("myForm")
+
+login.addEventListener("click", (event)=> {
+  console.log(event)
+  popUpForm.style.display = "none"
+})
+
 const musicLibary = {
   paris: "/paris.mp3", 
   sydney: "/skyclub.mp3", 
