@@ -12,7 +12,26 @@ import atmosphereFragmentFour from './shaders/atmosphereFragmentFour.glsl'
 // const module2 = import('./shaders/atmosphereFragmentTwo.glsl')
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 
+const MaterialStates = {
+  default: {
+    color: '#BCD2F1',
+    opacity: 0.4,
+    scale: 1
+  },
+  hover: {
+    color: '#E6F0FF',
+    opacity: 1,
+    scale: 1.5
+  },
+  active: {
+    color: '#FFD700',
+    opacity: 1,
+    scale: 1.3
+  }
+};
 
+const recordPlayer = document.getElementById('song')
+const song = recordPlayer  // since they refer to the same element
 const login = document.getElementById("submitButton")
 const popUpForm = document.getElementById("myForm")
 
@@ -29,6 +48,7 @@ const musicLibary = {
   lisbon: "/lisbon.mp3", 
   oakland: "/oakland.mp3"
 }
+
 
 
 let currentFragment = atmosphereFragmentFour
@@ -103,7 +123,7 @@ playAnim();
 
 //Begin Record Visualizer
 
-const recordPlayer = document.getElementById('song')
+// const recordPlayer = document.getElementById('song')
 const container = document.getElementById('canvas');
 const songSelector = document.getElementsByClassName('circle')
 
@@ -162,7 +182,17 @@ function playSong () {
       x += barWidth + .001;
     }
   }
+
   renderFrame();
+
+  gsap.to(atmosphere.material.uniforms.mixRatio, {
+    value: 1,
+    duration: 2,
+    yoyo: true,
+    repeat: -1,
+    ease: "power2.inOut"
+  })
+
 };
 
 recordPlayer.addEventListener("play", playSong)
@@ -215,12 +245,20 @@ const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.Sha
 
 //creating atmosphere object
 
-const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(2.5, 20, 20), new THREE.ShaderMaterial({  
-  vertexShader: atmosphereVertex,
-  fragmentShader: currentFragment, 
-  blending: THREE.AdditiveBlending,
-  side: THREE.BackSide
- }))
+const atmosphere = new THREE.Mesh(
+  new THREE.SphereGeometry(2.5, 20, 20), 
+  new THREE.ShaderMaterial({  
+    vertexShader: atmosphereVertex,
+    fragmentShader: atmosphereFragment,
+    uniforms: {
+      color1: { value: new THREE.Color(0.3, 0.6, 1.0) },  // Your original blue color
+      color2: { value: new THREE.Color(1.0, 0.3, 0.3) },  // New color to transition to
+      mixRatio: { value: 0.0 }  // Starting with first color
+    },
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide
+  })
+)
 
  atmosphere.scale.set(1.1,1.1,1.1)
  
@@ -290,13 +328,14 @@ scene.add(light)
 function createPoint({lat, lng, Title, Location, audio}){
 
   const box = new THREE.Mesh(
-  new THREE.BoxGeometry(.25, .25, .25), 
-  new THREE.MeshBasicMaterial({
-  color:'#BCD2F1', 
-  opacity: .4, 
-  transparent: true
-  })
+    new THREE.BoxGeometry(.25, .25, .25), 
+    new THREE.MeshBasicMaterial({
+      color: MaterialStates.default.color, 
+      opacity: MaterialStates.default.opacity, 
+      transparent: true
+    })
   )
+
   const latitude = (lat / 180) * Math.PI
   const longitude = (lng/ 180) * Math.PI
   const radius = 1.5
@@ -329,6 +368,8 @@ function createPoint({lat, lng, Title, Location, audio}){
   group.add(box)
 
 }
+
+
 
 
 sphere.rotation.y = -Math.PI/6
@@ -372,6 +413,20 @@ const mouse = {
   y: 0,
 }
 
+function enhanceLocationMarker(mesh, isHovered) {
+  gsap.to(mesh.material, {
+    opacity: isHovered ? MaterialStates.hover.opacity : MaterialStates.default.opacity,
+    duration: 0.3
+  });
+  
+  gsap.to(mesh.scale, {
+    x: isHovered ? MaterialStates.hover.scale : MaterialStates.default.scale,
+    y: isHovered ? MaterialStates.hover.scale : MaterialStates.default.scale,
+    z: isHovered ? MaterialStates.hover.scale : MaterialStates.default.scale,
+    duration: 0.3
+  });
+}
+
 //Controls 
 
 const controls = new OrbitControls(camera, canvas)
@@ -393,70 +448,71 @@ const songTitle = document.querySelector('#songTitle')
 const songLocation = document.querySelector('#songLocation')
 
 
-function animate(){
-  requestAnimationFrame(animate)
-  renderer.render(scene, camera)
-  // sphere.rotation.y += 0.003
-  group.rotation.y = 0.003
-  controls.autoRotate = true
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
 
   if(mouse.x){
     gsap.to(group.rotation, {
       x: -mouse.y * 1.8,
-      y: mouse.x *1.8,
+      y: mouse.x * 1.8,
       duration: 2
-    })
+    });
   }
 
-	raycaster.setFromCamera( mouse, camera );
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(
+    group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
+  );
 
-	// calculate objects intersecting the picking ray
-	const intersects = raycaster.intersectObjects(group.children.filter(mesh =>{
-    return mesh.geometry.type === 'BoxGeometry'
-  }) );
-
+  // Reset all markers to default state
   group.children.forEach((mesh) => {
-    mesh.material.opacity = .8
-    // console.log(mesh)
-  } )
-
-  gsap.set(popUpEl, {
-    // display: 'none'
-  })
-
-	for ( let i = 0; i < intersects.length; i ++ ) {
-    const box = intersects[ i ].object
-    box.material.opacity = 1
-    gsap.set(popUpEl, {
-      display: 'block'
-    })
-
-    //This function needs to be called one time, and then cancelled out so that it stops firing continuously 
-
-    controls.autoRotate = false
-    
-    if(songLocation.innerHTML != box.Location){
-      songLocation.innerHTML = box.Location
-      songTitle.innerHTML = box.Title
-      song.src = box.audio
+    if (mesh.geometry.type === 'BoxGeometry') {
+      enhanceLocationMarker(mesh, false);  // Changed from 'default' to false
     }
+  });
+
+  // Handle intersected marker
+  if (intersects.length > 0) {
+    const marker = intersects[0].object;
     
-    recordPlayer.play()
-    return     
-	}
-
-	renderer.render( scene, camera );
-
+    // Simplified audio state check
+    const isPlaying = recordPlayer.src.includes(marker.audio) && !recordPlayer.paused;
+    
+    enhanceLocationMarker(marker, true);  // Changed from isPlaying ? 'active' : 'hover' to true
+    controls.autoRotate = false;
+    
+    // Update UI elements if changed
+    if (marker.Location && songLocation.innerHTML !== marker.Location) {
+      songLocation.innerHTML = marker.Location;
+      songTitle.innerHTML = marker.Title;
+      recordPlayer.src = marker.audio;  // Changed from song.src to recordPlayer.src
+    }
+  } else {
+    controls.autoRotate = true;
+  }
 }
+
 animate()
 
 //explore on click
 
-canvas.addEventListener('mousemove',(event) =>{
-  mouse.x = ((event.clientX - innerWidth ))/(innerWidth) +.5
-  mouse.y = -(event.clientY/innerHeight) +.5
-  console.log(mouse.x, mouse.y)
-})
+canvas.addEventListener('mousemove', (event) => {
+  mouse.x = ((event.clientX - innerWidth)) / (innerWidth) + .5;
+  mouse.y = -(event.clientY / innerHeight) + .5;
+  
+  // Add tooltip update
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(
+    group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
+  );
+  
+  if (intersects.length > 0) {
+    updateTooltip(event, intersects[0].object);
+  } else {
+    updateTooltip(event, null);
+  }
+});
 
 //Resize 
 window.addEventListener('resize', ()=>{
