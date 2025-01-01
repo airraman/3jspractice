@@ -315,3 +315,28 @@ audio {
   backdrop-filter: blur(3px);
   z-index: 999;
 }
+
+.form-message {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  min-height: 20px;
+}
+
+.button-loader {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

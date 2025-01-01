@@ -505,20 +505,65 @@ function initializeApp() {
   }
 
   // Add after your existing form handling code
+
+
 function initializeForm() {
-  const backdrop = document.createElement('div')
-  backdrop.className = 'backdrop'
-  document.body.appendChild(backdrop)
-  
   const form = document.getElementById('myForm')
   const submitButton = document.getElementById('submitButton')
+  const buttonText = submitButton.querySelector('.button-text')
+  const buttonLoader = submitButton.querySelector('.button-loader')
+  const formMessage = document.getElementById('formMessage')
+  const phoneInput = document.getElementById('phoneNumber')
+  
+  // Replace with your deployed Google Apps Script URL
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVV9fh7Jnfk2HyiZ9OzWwPoSrGbfjy9G6NGpJZJtFm5-uv-A9meC4oKmhHoOahw41DuA/exec'
+  
+  async function submitPhoneNumber(phoneNumber) {
+    try {
+      buttonText.classList.add('hidden')
+      buttonLoader.classList.remove('hidden')
+      
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: phoneNumber,
+          timestamp: new Date().toISOString()
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (result.status === 'success') {
+        formMessage.textContent = 'Thank you!'
+        formMessage.style.color = '#4CAF50'
+        setTimeout(() => {
+          form.style.display = 'none'
+        }, 1000)
+      } else {
+        throw new Error('Submission failed')
+      }
+    } catch (error) {
+      formMessage.textContent = 'Something went wrong. Please try again.'
+      formMessage.style.color = '#f44336'
+    } finally {
+      buttonText.classList.remove('hidden')
+      buttonLoader.classList.add('hidden')
+    }
+  }
   
   submitButton.addEventListener('click', () => {
-    form.style.display = 'none'
-    backdrop.style.display = 'none'
+    const phoneNumber = phoneInput.value.trim()
+    if (phoneNumber) {
+      submitPhoneNumber(phoneNumber)
+    } else {
+      formMessage.textContent = 'Please enter a valid phone number'
+      formMessage.style.color = '#f44336'
+    }
   })
 }
-
 
 
   // Handle window resize
