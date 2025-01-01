@@ -140,7 +140,7 @@ function initializeApp() {
       
       let x = 0
       for (let i = 0; i < bufferLength; i++) {
-        const barHeight = dataArray[i]
+        const barHeight = dataArray[i] * 2.5
         const r = barHeight + (0 * (i/bufferLength))
         const g = 120 * (i/bufferLength)
         const b = 86
@@ -503,6 +503,23 @@ function initializeApp() {
       popUpForm.style.display = 'none'
     })
   }
+
+  // Add after your existing form handling code
+function initializeForm() {
+  const backdrop = document.createElement('div')
+  backdrop.className = 'backdrop'
+  document.body.appendChild(backdrop)
+  
+  const form = document.getElementById('myForm')
+  const submitButton = document.getElementById('submitButton')
+  
+  submitButton.addEventListener('click', () => {
+    form.style.display = 'none'
+    backdrop.style.display = 'none'
+  })
+}
+
+
 
   // Handle window resize
   addEventListener('resize', () => {

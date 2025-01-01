@@ -8,21 +8,21 @@
   </head>
   <body>
     <!-- Login Form -->
-    <div class="form-popup" id="myForm">
-      <form class="form-container" id="loginForm">
-        <h1>Login</h1>
-        <label for="phoneNumber"><b>Phone Number</b></label>
-        <input 
-          type="tel" 
-          placeholder="Enter Phone Number" 
-          name="phoneNumber" 
-          id="phoneNumber" 
-          required
-        >
-        <!-- Removed inline onclick and changed button type -->
-        <button type="button" id="submitButton" class="btn cancel">Close</button>
-      </form>
-    </div>
+<!-- Replace your current form-popup div with this -->
+<div class="form-popup" id="myForm">
+  <div class="form-container">
+    <p class="form-title">Welcome to SongMap</p>
+    <p class="form-subtitle">Enter your number to continue</p>
+    <input 
+      type="tel" 
+      placeholder="(555) 555-5555" 
+      name="phoneNumber" 
+      id="phoneNumber" 
+      required
+    >
+    <button type="button" id="submitButton" class="submit-btn">Continue</button>
+  </div>
+</div>
 
     <!-- Main Application Elements -->
     <canvas class="webgl"></canvas>
