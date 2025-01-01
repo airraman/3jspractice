@@ -507,64 +507,105 @@ function initializeApp() {
   // Add after your existing form handling code
 
 
-function initializeForm() {
-  const form = document.getElementById('myForm')
-  const submitButton = document.getElementById('submitButton')
-  const buttonText = submitButton.querySelector('.button-text')
-  const buttonLoader = submitButton.querySelector('.button-loader')
-  const formMessage = document.getElementById('formMessage')
-  const phoneInput = document.getElementById('phoneNumber')
-  
-  // Replace with your deployed Google Apps Script URL
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVV9fh7Jnfk2HyiZ9OzWwPoSrGbfjy9G6NGpJZJtFm5-uv-A9meC4oKmhHoOahw41DuA/exec'
-  
-  async function submitPhoneNumber(phoneNumber) {
-    try {
-      buttonText.classList.add('hidden')
-      buttonLoader.classList.remove('hidden')
+  function initializeForm() {
+    const form = document.getElementById('myForm')
+    const submitButton = document.getElementById('submitButton')
+    const buttonText = submitButton.querySelector('.button-text')
+    const buttonLoader = submitButton.querySelector('.button-loader')
+    const formMessage = document.getElementById('formMessage')
+    const phoneInput = document.getElementById('phoneNumber')
+    const backdrop = document.querySelector('.backdrop')
+    
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7tHnAV1TdhnDo-ci02Wd87WztdAn8UEmmcEK8r7r4KZXVascnYLy0M_TN7cF8zeEfug/exec'
+    
+    // Phone number validation
+    function isValidPhoneNumber(phone) {
+      const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
+      return phoneRegex.test(phone)
+    }
+    
+    async function submitPhoneNumber(phoneNumber) {
+      console.log('Attempting to submit phone number:', phoneNumber) // Debug log
       
-      const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      try {
+        buttonText.classList.add('hidden')
+        buttonLoader.classList.remove('hidden')
+        
+        // Format the data
+        const formData = {
           phoneNumber: phoneNumber,
           timestamp: new Date().toISOString()
+        }
+        
+        console.log('Sending data:', formData) // Debug log
+        
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // Important for Google Apps Script
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
         })
-      })
-      
-      const result = await response.json()
-      
-      if (result.status === 'success') {
-        formMessage.textContent = 'Thank you!'
+        
+        console.log('Response received:', response) // Debug log
+        
+        // Since mode is no-cors, we can't read the response
+        // Instead, we'll assume success if the request didn't throw an error
+        formMessage.textContent = 'Thank you for subscribing!'
         formMessage.style.color = '#4CAF50'
+        
+        // Store in localStorage to prevent showing form again
+        localStorage.setItem('formSubmitted', 'true')
+        
         setTimeout(() => {
           form.style.display = 'none'
-        }, 1000)
-      } else {
-        throw new Error('Submission failed')
+          if (backdrop) backdrop.style.display = 'none'
+        }, 2000)
+        
+      } catch (error) {
+        console.error('Submission error:', error) // Debug log
+        formMessage.textContent = 'Something went wrong. Please try again.'
+        formMessage.style.color = '#f44336'
+      } finally {
+        buttonText.classList.remove('hidden')
+        buttonLoader.classList.add('hidden')
       }
-    } catch (error) {
-      formMessage.textContent = 'Something went wrong. Please try again.'
-      formMessage.style.color = '#f44336'
-    } finally {
-      buttonText.classList.remove('hidden')
-      buttonLoader.classList.add('hidden')
+    }
+    
+    // Form submission handler
+    submitButton.addEventListener('click', async (e) => {
+      e.preventDefault()
+      
+      const phoneNumber = phoneInput.value.trim()
+      console.log('Submit clicked, phone number:', phoneNumber) // Debug log
+      
+      if (!phoneNumber) {
+        formMessage.textContent = 'Please enter your phone number'
+        formMessage.style.color = '#f44336'
+        return
+      }
+      
+      if (!isValidPhoneNumber(phoneNumber)) {
+        formMessage.textContent = 'Please enter a valid phone number'
+        formMessage.style.color = '#f44336'
+        return
+      }
+      
+      await submitPhoneNumber(phoneNumber)
+    })
+    
+    // Check if form was already submitted
+    if (localStorage.getItem('formSubmitted') === 'true') {
+      form.style.display = 'none'
+      if (backdrop) backdrop.style.display = 'none'
     }
   }
   
-  submitButton.addEventListener('click', () => {
-    const phoneNumber = phoneInput.value.trim()
-    if (phoneNumber) {
-      submitPhoneNumber(phoneNumber)
-    } else {
-      formMessage.textContent = 'Please enter a valid phone number'
-      formMessage.style.color = '#f44336'
-    }
+  // Call initializeForm after DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeForm()
   })
-}
-
 
   // Handle window resize
   addEventListener('resize', () => {
