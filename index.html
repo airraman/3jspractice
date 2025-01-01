@@ -1,6 +1,5 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.jpeg" />
@@ -8,27 +7,59 @@
     <title>SongMap.io</title>
   </head>
   <body>
+    <!-- Login Form -->
     <div class="form-popup" id="myForm">
-      <form class="form-container">
+      <form class="form-container" id="loginForm">
         <h1>Login</h1>
-        <label for="email"><b>Phone Number</b></label>
-        <input type="text" placeholder="Enter Phone Number" name="email" required>
-        <button type="button" id="submitButton" class="btn cancel" onclick="closeForm()">Close</button>
+        <label for="phoneNumber"><b>Phone Number</b></label>
+        <input 
+          type="tel" 
+          placeholder="Enter Phone Number" 
+          name="phoneNumber" 
+          id="phoneNumber" 
+          required
+        >
+        <!-- Removed inline onclick and changed button type -->
+        <button type="button" id="submitButton" class="btn cancel">Close</button>
       </form>
     </div>
+
+    <!-- Main Application Elements -->
     <canvas class="webgl"></canvas>
+    
+    <!-- Text Elements -->
     <div class="textbox">
       <h2 class="innertext"></h2>
     </div>
-    <div id= "popUpElement">
-      <h2 id= "songTitle" class="text-black">Song: </h2>
-      <p id= "songLocation" class="text-black">Location: </p>
+    
+    <!-- Song Information -->
+    <div id="popUpElement">
+      <h2 id="songTitle" class="text-black">Song: </h2>
+      <p id="songLocation" class="text-black">Location: </p>
     </div>
+
+    <!-- Audio Visualization Elements -->
     <div class="circle"></div>
     <canvas id="canvas"></canvas>
+    
+    <!-- Audio Player -->
     <div class="holder">
-      <audio id="song" crossorigin="anonymous" controls loop src='/yachtclub.mp3'></audio>
-  </div>
+      <audio 
+        id="song" 
+        crossorigin="anonymous" 
+        controls 
+        loop 
+        src="/yachtclub.mp3"
+      ></audio>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="loading-hidden">
+      <div class="loading-spinner"></div>
+      <span class="loading-text">Loading track...</span>
+    </div>
+
+    <!-- Scripts -->
     <script type="module" src="/main.js"></script>
   </body>
 </html>

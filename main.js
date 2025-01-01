@@ -1,20 +1,22 @@
+// =========================================
+// Imports and Initial Setup
+// =========================================
 import * as THREE from 'three'
 import './style.css'
 import gsap from 'gsap'
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import { OrbitControls } from 'three/examples/jsm/Addons.js'
 import vertexShader from './shaders/vertex.glsl'
 import fragmentShader from './shaders/fragment.glsl'
 import atmosphereVertex from './shaders/atmosphereVertex.glsl'
 import atmosphereFragment from './shaders/atmosphereFragment.glsl'
-import atmosphereFragmentTwo from './shaders/atmosphereFragmentTwo.glsl'
-import atmosphereFragmentThree from './shaders/atmosphereFragmentThree.glsl'
-import atmosphereFragmentFour from './shaders/atmosphereFragmentFour.glsl'
-// const module2 = import('./shaders/atmosphereFragmentTwo.glsl')
-import AudioMotionAnalyzer from 'audiomotion-analyzer';
+import AudioMotionAnalyzer from 'audiomotion-analyzer'
 
+// =========================================
+// Global Configuration
+// =========================================
 const MaterialStates = {
   default: {
-    color: '#BCD2F1',
+    color: '#3BF7FF',
     opacity: 0.4,
     scale: 1
   },
@@ -28,509 +30,492 @@ const MaterialStates = {
     opacity: 1,
     scale: 1.3
   }
-};
-
-const recordPlayer = document.getElementById('song')
-const song = recordPlayer  // since they refer to the same element
-const login = document.getElementById("submitButton")
-const popUpForm = document.getElementById("myForm")
-
-login.addEventListener("click", (event)=> {
-  console.log(event)
-  popUpForm.style.display = "none"
-})
+}
 
 const musicLibary = {
-  paris: "/paris.mp3", 
-  sydney: "/skyclub.mp3", 
-  brooklyn: "/yachtclub.mp3", 
-  london: "/memorylane.mp3", 
-  lisbon: "/lisbon.mp3", 
+  paris: "/paris.mp3",
+  sydney: "/skyclub.mp3",
+  brooklyn: "/yachtclub.mp3",
+  london: "/memorylane.mp3",
+  lisbon: "/lisbon.mp3",
   oakland: "/oakland.mp3"
 }
 
+const locations = [
+  {
+    lat: 48.8566,   // Paris
+    lng: 2.3522,
+    Title: "6am in Paris",
+    Location: "paris",
+    audio: musicLibary.paris
+  },
+  {
+    lat: 51.5074,   // London
+    lng: -0.1278,
+    Title: "memory lane",
+    Location: "london",
+    audio: musicLibary.london
+  },
+  {
+    lat: 38.7223,   // Lisbon
+    lng: -9.1393,
+    Title: "summer in lisbon",
+    Location: "lisbon",
+    audio: musicLibary.lisbon
+  },
+  {
+    lat: 40.6782,   // Brooklyn
+    lng: -73.9442,
+    Title: "bushwick yacht club",
+    Location: "bushwick",
+    audio: musicLibary.brooklyn
+  },
+  {
+    lat: 37.8044,   // Oakland
+    lng: -122.2712,
+    Title: "somewhere out in oakland",
+    Location: "LA",
+    audio: musicLibary.oakland
+  },
+  {
+    lat: -33.8688,  // Sydney
+    lng: 151.2093,
+    Title: "skyclub",
+    Location: "sydney",
+    audio: musicLibary.sydney
+  }
+]
 
+// Initialize application when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeApp)
 
-let currentFragment = atmosphereFragmentFour
+function initializeApp() {
+  // =========================================
+  // DOM Elements Setup
+  // =========================================
+  const canvas = document.querySelector('.webgl')
+  if (!canvas) {
+    console.error('Required canvas element is missing')
+    return
+  }
 
-function colorChanger(currentFragment){
+  const recordPlayer = document.getElementById('song')
+  const popUpEl = document.querySelector('#popUpElement')
+  const songTitle = document.querySelector('#songTitle')
+  const songLocation = document.querySelector('#songLocation')
+  const loadingIndicator = document.getElementById('loading-indicator')
 
-  currentFragment = atmosphereFragmentTwo
+  // Audio visualization canvas
+  const visualizerCanvas = document.getElementById('canvas')
+  if (visualizerCanvas) {
+    visualizerCanvas.width = window.innerWidth
+    visualizerCanvas.height = window.innerHeight
+  }
 
-  console.log("here I am")
-
-  return function () {
-    if (!hasBeenCalled) {
-        console.log('Function called!');
-        hasBeenCalled = true;
-    } else {
-        console.log('Function can only be called once.');
-    }
-};
-
+  function playSong() {
+    const context = new AudioContext()
+    const src = context.createMediaElementSource(recordPlayer)
+    const analyser = context.createAnalyser()
+    
+    src.connect(analyser)
+    analyser.connect(context.destination)
+    
+    analyser.fftSize = 256
+    const bufferLength = analyser.frequencyBinCount
+    const dataArray = new Uint8Array(bufferLength)
+  
    
+    // Change this line in the playSong function:
+  const ctx = visualizerCanvas.getContext("2d")
+  const WIDTH = visualizerCanvas.width
+  const HEIGHT = visualizerCanvas.height
+    const barWidth = (WIDTH / bufferLength)
+    
+    function renderFrame() {
+      requestAnimationFrame(renderFrame)
+      
+      analyser.getByteFrequencyData(dataArray)
+      ctx.fillStyle = "#000"
+      ctx.fillRect(0, 0, WIDTH, HEIGHT)
+      
+      let x = 0
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = dataArray[i]
+        const r = barHeight + (0 * (i/bufferLength))
+        const g = 120 * (i/bufferLength)
+        const b = 86
+        
+        ctx.fillStyle = `rgb(${r},${g},${b})`
+        ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight)
+        x += barWidth + .001
+      }
+    }
+    
+    renderFrame()
+  }
 
-  //  setTimeout(()=>{
-  //   currentFragment = atmosphereFragmentThree
-  //  }, 1)
+  recordPlayer.addEventListener("play", playSong)
 
-  //  console.log(currentFragment)
-
-}
-
-
-//Initiate Typewriter 
-var typingElement = document.querySelector(".innertext");
-var typeArray = ["Welcome to SongMap.io", 
-  "These are songs I wrote all around the world", 
-  "Click on a location", 
-  "and listen to the song"];
-var index = 0,
-  isAdding = true,
-  typeIndex = 0;
-
-function playAnim() {
-  setTimeout(
-    function () {
-      typingElement.innerText = typeArray[typeIndex].slice(0, index);
-      if (isAdding) {
-        if (index >= typeArray[typeIndex].length) {
-          isAdding = false;
-          setTimeout(function () {
-            playAnim();
-          }, 2000);
-          return;
-        } else {
-          index++;
-        }
-      } else {
-        if (index === 0) {
-          isAdding = true;
-          typeIndex++;
-          if (typeIndex >= typeArray.length) {
-            typeIndex = 0;
-          }
-        } else {
-          index--;
+  // =========================================
+  // Audio Loading Manager
+  // =========================================
+  const AudioLoadingManager = {
+    loadingIndicator,
+    
+    showLoading() {
+      if (this.loadingIndicator) {
+        this.loadingIndicator.classList.remove('loading-hidden')
+      }
+    },
+    
+    hideLoading() {
+      if (this.loadingIndicator) {
+        this.loadingIndicator.classList.add('loading-hidden')
+      }
+    },
+    
+    updateLoadingProgress(progress) {
+      if (this.loadingIndicator) {
+        const text = this.loadingIndicator.querySelector('.loading-text')
+        if (text) {
+          text.textContent = `Loading track... ${Math.round(progress)}%`
         }
       }
-      playAnim();
-    },
-    isAdding ? 120 : 60
-  );
-}
-playAnim();
-
-//Begin Record Visualizer
-
-// const recordPlayer = document.getElementById('song')
-const container = document.getElementById('canvas');
-const songSelector = document.getElementsByClassName('circle')
-
-// const audioContext = new AudioContext();
-
-
-
-function playSong () {
-
-  // colorChanger()
-  console.log(recordPlayer.src)
-
-  var context = new AudioContext();
-  var src = context.createMediaElementSource(recordPlayer);
-  var analyser = context.createAnalyser();
-  
-  var ctx = container.getContext("2d");
-  
-  src.connect(analyser);
-  analyser.connect(context.destination);
-  
-  analyser.fftSize = 256;
-  
-  var bufferLength = analyser.frequencyBinCount;
-  // console.log(bufferLength);
-  
-  var dataArray = new Uint8Array(bufferLength);
-  
-  var WIDTH = container.width;
-  var HEIGHT = container.height * 1 ;
-  
-  var barWidth = (WIDTH / bufferLength) * 1;
-  var barHeight;
-  var x = 0;
-  
-  function renderFrame() {
-    requestAnimationFrame(renderFrame);
-  
-    x = 0;
-  
-    analyser.getByteFrequencyData(dataArray);
-  
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  
-    for (var i = 0; i < bufferLength; i++) {
-      barHeight = dataArray[i];
-      
-      var r = barHeight + (0 * (i/bufferLength));
-      var g = 120 * (i/bufferLength);
-      var b = 86;
-  
-      ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
-      ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
-  
-      x += barWidth + .001;
     }
   }
 
-  renderFrame();
+  // =========================================
+  // Three.js Scene Setup
+  // =========================================
+  const scene = new THREE.Scene()
+  const camera = new THREE.PerspectiveCamera(
+    100,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  )
 
-  gsap.to(atmosphere.material.uniforms.mixRatio, {
-    value: 1,
-    duration: 2,
-    yoyo: true,
-    repeat: -1,
-    ease: "power2.inOut"
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true
   })
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.setPixelRatio(window.devicePixelRatio)
 
-};
-
-recordPlayer.addEventListener("play", playSong)
-
-
-
-//End Record Visualizer
-
-const canvas = document.querySelector('.webgl');
-
-//Sizes 
-const sizes = {
-  width: window.innerWidth, 
-  height: window.innerHeight
-}
-
-//Create Scene
-const scene = new THREE.Scene();
-
-//Camera
-
-const camera = new THREE.PerspectiveCamera(45, sizes.width/sizes.height)
-
-//Moving camera back since default is to be in same position as shape
-camera.position.z = 15
-scene.add(camera)
-
-//Renderer
-
-const renderer = new THREE.WebGLRenderer({canvas, 
-  antialias: true});
-renderer.setPixelRatio(window.devicePixelRatio)
-
-renderer.setSize(sizes.width, sizes.height)
-renderer.render(scene, camera)
-
-//creating sphere object
-
-const sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 20, 20), new THREE.ShaderMaterial({  
-  vertexShader,
-  fragmentShader, 
-  uniforms: {
-   globeTexture: {
-     value: new THREE.TextureLoader().load('/img/globe.jpeg')
-   }
-  }
- }))
-
- scene.add(sphere)
-
-//creating atmosphere object
-
-const atmosphere = new THREE.Mesh(
-  new THREE.SphereGeometry(2.5, 20, 20), 
-  new THREE.ShaderMaterial({  
-    vertexShader: atmosphereVertex,
-    fragmentShader: atmosphereFragment,
-    uniforms: {
-      color1: { value: new THREE.Color(0.3, 0.6, 1.0) },  // Your original blue color
-      color2: { value: new THREE.Color(1.0, 0.3, 0.3) },  // New color to transition to
-      mixRatio: { value: 0.0 }  // Starting with first color
-    },
-    blending: THREE.AdditiveBlending,
-    side: THREE.BackSide
-  })
-)
-
- atmosphere.scale.set(1.1,1.1,1.1)
- 
- scene.add(atmosphere)
-
- const group = new THREE.Group()
- group.add(sphere)
- scene.add(group)
-
-
- //creates stars on one half of the screen 
- const starGeometry = new THREE.BufferGeometry()
-
- const starMaterial = new THREE.PointsMaterial({
-  color: 0xffffff
- })
-
-const starVertices = []
-for (let i = 0; i < 20000; i++) {
-  const x = (Math.random() - 0.5) * 2000
-  const y = (Math.random() - 0.5) * 2000
-  const z = -Math.random() * 3000
-  starVertices.push(x, y, z)
-}
-
-starGeometry.setAttribute(
-  'position',
-  new THREE.Float32BufferAttribute(starVertices, 3)
-)
-
-const stars = new THREE.Points(starGeometry, starMaterial)
-scene.add(stars)
-
-starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3))
-
-console.log(starVertices)
-//creates stars on one half of the screen
-
-//populating stars on other side of screen
-const starGeometryTwo = new THREE.BufferGeometry()
-
-const starMaterialTwo = new THREE.PointsMaterial({
-  color: 0xffffff
- })
-
-const starVerticesTwo = []
- for (let i = 0; i < 20000; i++) {
-   const x = (Math.random() - 0.5) * -2000
-   const y = (Math.random() - 0.5) * -2000
-   const z = -Math.random() * -3000
-   starVerticesTwo.push(x, y, z)
- }
-
-starGeometryTwo.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3))
-
-const starsTwo = new THREE.Points(starGeometryTwo, starMaterialTwo)
-scene.add(starsTwo)
-
-starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerticesTwo, 3))
-//populating stars on other side of screen
-
-//Light 
-const light = new THREE.PointLight(0xffffff, 100, 0)
-light.position.set(0, 10, 10)
-scene.add(light)
-
-function createPoint({lat, lng, Title, Location, audio}){
-
-  const box = new THREE.Mesh(
-    new THREE.BoxGeometry(.25, .25, .25), 
-    new THREE.MeshBasicMaterial({
-      color: MaterialStates.default.color, 
-      opacity: MaterialStates.default.opacity, 
-      transparent: true
+  // =========================================
+  // Globe Creation
+  // =========================================
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(5, 50, 50),
+    new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        globeTexture: {
+          value: new THREE.TextureLoader().load('/img/globe.jpeg')
+        }
+      }
     })
   )
 
-  const latitude = (lat / 180) * Math.PI
-  const longitude = (lng/ 180) * Math.PI
-  const radius = 1.5
+  // Initial sphere rotation
+  sphere.rotation.y = -Math.PI / 2
 
-  const x = radius * Math.cos(latitude) * Math.sin(longitude)
-  const y = radius * Math.sin(latitude)
-  const z = radius * Math.cos(latitude) * Math.cos(longitude)
+  // Atmosphere effect
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(5, 50, 50),
+    new THREE.ShaderMaterial({
+      vertexShader: atmosphereVertex,
+      fragmentShader: atmosphereFragment,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide
+    })
+  )
 
-  box.position.x = x 
-  box.position.y = y  
-  box.position.z = z 
+  atmosphere.scale.set(1.1, 1.1, 1.1)
+  scene.add(atmosphere)
 
-  box.lookAt(0,0,0)
+  const group = new THREE.Group()
+  group.add(sphere)
+  scene.add(group)
 
-  gsap.to(box.scale, {
-    z: 1.5, 
-    duration: 5, 
-    yoyo: true,
-    repeat: -1,  
-    ease: 'linear', 
-    delay: Math.random()
-  })
-  box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -.4))
+  // =========================================
+  // Star Field Creation
+  // =========================================
+  function createStarField() {
+    const starGeometry = new THREE.BufferGeometry()
+    const starMaterial = new THREE.PointsMaterial({
+      color: 0xffffff
+    })
 
-  box.Title = Title
-  box.Location = Location
-  box.audio = audio
+    const starVertices = []
+    for (let i = 0; i < 10000; i++) {
+      const x = (Math.random() - 0.5) * 2000
+      const y = (Math.random() - 0.5) * 2000
+      const z = -Math.random() * 3000
+      starVertices.push(x, y, z)
+    }
+
+    starGeometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(starVertices, 3)
+    )
+
+    return new THREE.Points(starGeometry, starMaterial)
+  }
+
+  scene.add(createStarField())
+
+  function createSecondStarField() {
+    const starGeometry = new THREE.BufferGeometry()
+    const starMaterial = new THREE.PointsMaterial({
+      color: 0xffffff
+    })
+
+    const starVertices = []
+    for (let i = 0; i < 10000; i++) {
+      const x = (Math.random() - 0.5) * -2000
+      const y = (Math.random() - 0.5) * -2000
+      const z = -Math.random() * -3000
+      starVertices.push(x, y, z)
+    }
+
+    starGeometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(starVertices, 3)
+    )
+
+    return new THREE.Points(starGeometry, starMaterial)
+  }
 
 
-  group.add(box)
+  scene.add(createSecondStarField())
 
-}
+  camera.position.z = 15
 
+  // =========================================
+  // Location Points Creation
+  // =========================================
+  function createPoint({lat, lng, Title, Location, audio}) {
+    const box = new THREE.Mesh(
+      new THREE.BoxGeometry(0.2, 0.2, 0.8),
+      new THREE.MeshBasicMaterial({
+        color: MaterialStates.default.color,
+        opacity: MaterialStates.default.opacity,
+        transparent: true
+      })
+    )
 
+    const latitude = (lat / 180) * Math.PI
+    const longitude = (lng / 180) * Math.PI
+    const radius = 5
 
+    const x = radius * Math.cos(latitude) * Math.sin(longitude)
+    const y = radius * Math.sin(latitude)
+    const z = radius * Math.cos(latitude) * Math.cos(longitude)
 
-sphere.rotation.y = -Math.PI/6
+    box.position.set(x, y, z)
+    
+    box.lookAt(0, 0, 0)
+    box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -0.4))
 
-group.rotation.offset = {
-  x: 0,
-  y: 0
-}
+    gsap.to(box.scale, {
+      z: 1.4,
+      duration: 2,
+      yoyo: true,
+      repeat: -1,
+      ease: 'linear',
+      delay: Math.random()
+    })
 
-// let paris = [50.3575, 60.614]
+    box.Title = Title
+    box.Location = Location
+    box.audio = audio
 
-//PARIS
-createPoint({lat: 50.3575, lng: 60.614, Title: "6am in Paris", Location: "paris", audio: musicLibary.paris })
+    group.add(box)
+  }
 
-// //AMSTERDAM
-// createPoint(56.3676, 66.9041)
+  locations.forEach(createPoint)
 
-//LONDON
-createPoint({lat: 56.5072, lng: 60.1276, Title: "memory lane", Location: "london", audio: musicLibary.london})
+  // =========================================
+  // Interaction Setup
+  // =========================================
+  const mouse = {
+    x: undefined,
+    y: undefined,
+    down: false,
+    xPrev: undefined,
+    yPrev: undefined
+  }
 
-// //CASABLANCA
-// createPoint(30.6225, 55.9898)
+  function enhanceLocationMarker(mesh, isHovered, isPlaying) {
+    const targetState = isPlaying ? MaterialStates.active :
+                       isHovered ? MaterialStates.hover :
+                       MaterialStates.default
 
-//LISBON
-createPoint({lat: 40.7223, lng: 50.1393, Title: "summer in lisbon", Location: "lisbon", audio: musicLibary.lisbon})
+    gsap.to(mesh.material, {
+      opacity: targetState.opacity,
+      color: targetState.color,
+      duration: 0.3
+    })
+    
+    gsap.to(mesh.scale, {
+      x: targetState.scale,
+      y: targetState.scale,
+      z: targetState.scale,
+      duration: 0.3
+    })
+  }
 
-//BROOKLYN
-createPoint({lat: 38.6958, lng: -18.9171, Title: 'bushwick yacht club', Location: "bushwick", audio: musicLibary.brooklyn})
+  // Audio loading and playback
+  async function loadAndPlaySong(marker) {
+    return new Promise((resolve, reject) => {
+      if (!marker.audio) {
+        reject(new Error('No audio source provided'))
+        return
+      }
 
-//LOS ANGELES
-createPoint({lat: 37.8044, lng: -58.2712, Title: "somewhere out in oakland", Location: "LA", audio: musicLibary.oakland})
+      const handleSuccess = () => {
+        AudioLoadingManager.hideLoading()
+        recordPlayer.play()
+          .then(resolve)
+          .catch(reject)
+        cleanup()
+      }
 
-// //BENIN
-// createPoint({lat: 6.3562, lng: 55.4278, Title: "sleeptalking", Location: "west africa", audio: musicLibary.w})
+      const handleError = () => {
+        cleanup()
+        reject(new Error('Failed to load audio'))
+      }
 
-//SYDNEY
-createPoint({lat: -33.8688, lng: 208.2093, Title: "skyclub", Location: "sydney", audio: musicLibary.sydney})
+      const cleanup = () => {
+        recordPlayer.removeEventListener('canplay', handleSuccess)
+        recordPlayer.removeEventListener('error', handleError)
+      }
 
-const mouse = {
-  x: 0,
-  y: 0,
-}
+      recordPlayer.addEventListener('canplay', handleSuccess, { once: true })
+      recordPlayer.addEventListener('error', handleError, { once: true })
+      
+      recordPlayer.src = marker.audio
+    })
+  }
 
-function enhanceLocationMarker(mesh, isHovered) {
-  gsap.to(mesh.material, {
-    opacity: isHovered ? MaterialStates.hover.opacity : MaterialStates.default.opacity,
-    duration: 0.3
-  });
-  
-  gsap.to(mesh.scale, {
-    x: isHovered ? MaterialStates.hover.scale : MaterialStates.default.scale,
-    y: isHovered ? MaterialStates.hover.scale : MaterialStates.default.scale,
-    z: isHovered ? MaterialStates.hover.scale : MaterialStates.default.scale,
-    duration: 0.3
-  });
-}
-
-//Controls 
-
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true 
-controls.enablePan = false
-controls.enableZoom = false
-controls.autoRotate = true
-controls.autoRotateSpeed = 2.2
-
-addEventListener("mousemove", (event) => {
-  console.log(event)
+  // Controls setup
+  const controls = new OrbitControls(camera, canvas)
+  controls.enableDamping = true
+  controls.enablePan = false
+  controls.enableZoom = false
   controls.autoRotate = true
-});
+  controls.autoRotateSpeed = 0.5
+  controls.rotateSpeed = 0.5
+  controls.minPolarAngle = Math.PI * 0.2
+  controls.maxPolarAngle = Math.PI * 0.8
 
+  const raycaster = new THREE.Raycaster()
 
-const raycaster = new THREE.Raycaster();
-const popUpEl = document.querySelector('#popUpElement')
-const songTitle = document.querySelector('#songTitle')
-const songLocation = document.querySelector('#songLocation')
+  // =========================================
+  // Animation Loop
+  // =========================================
+  function animate() {
+    requestAnimationFrame(animate)
+    
+    controls.update()
 
+    raycaster.setFromCamera(mouse, camera)
+    const intersects = raycaster.intersectObjects(
+      group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
+    )
 
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
+    // Reset all markers
+    group.children.forEach((mesh) => {
+      if (mesh.geometry.type === 'BoxGeometry') {
+        const isMeshPlaying = recordPlayer.src.includes(mesh.audio) && !recordPlayer.paused
+        enhanceLocationMarker(mesh, false, isMeshPlaying)
+      }
+    })
 
-  if(mouse.x){
-    gsap.to(group.rotation, {
-      x: -mouse.y * 1.8,
-      y: mouse.x * 1.8,
-      duration: 2
-    });
-  }
-
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(
-    group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
-  );
-
-  // Reset all markers to default state
-  group.children.forEach((mesh) => {
-    if (mesh.geometry.type === 'BoxGeometry') {
-      enhanceLocationMarker(mesh, false);  // Changed from 'default' to false
+    // Handle intersected marker
+    if (intersects.length > 0) {
+      const marker = intersects[0].object
+      const isPlaying = recordPlayer.src.includes(marker.audio) && !recordPlayer.paused
+      
+      enhanceLocationMarker(marker, true, isPlaying)
+      controls.autoRotate = false
+      
+      if (marker.Location && songLocation.innerHTML !== marker.Location) {
+        AudioLoadingManager.showLoading()
+        songLocation.innerHTML = marker.Location
+        songTitle.innerHTML = marker.Title
+        
+        loadAndPlaySong(marker).catch(error => {
+          console.error('Error loading audio:', error)
+          AudioLoadingManager.hideLoading()
+        })
+      }
+    } else {
+      controls.autoRotate = true
     }
-  });
 
-  // Handle intersected marker
-  if (intersects.length > 0) {
-    const marker = intersects[0].object;
-    
-    // Simplified audio state check
-    const isPlaying = recordPlayer.src.includes(marker.audio) && !recordPlayer.paused;
-    
-    enhanceLocationMarker(marker, true);  // Changed from isPlaying ? 'active' : 'hover' to true
-    controls.autoRotate = false;
-    
-    // Update UI elements if changed
-    if (marker.Location && songLocation.innerHTML !== marker.Location) {
-      songLocation.innerHTML = marker.Location;
-      songTitle.innerHTML = marker.Title;
-      recordPlayer.src = marker.audio;  // Changed from song.src to recordPlayer.src
+    renderer.render(scene, camera)
+  }
+
+  // =========================================
+  // Event Listeners
+  // =========================================
+  canvas.addEventListener('mousedown', ({ clientX, clientY }) => {
+    mouse.down = true
+    mouse.xPrev = clientX
+    mouse.yPrev = clientY
+  })
+
+  addEventListener('mousemove', (event) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+
+    if (mouse.down) {
+      event.preventDefault()
+      const deltaX = event.clientX - mouse.xPrev
+      const deltaY = event.clientY - mouse.yPrev
+
+      group.rotation.offset = group.rotation.offset || { x: 0, y: 0 }
+      group.rotation.offset.x += deltaY * 0.005
+      group.rotation.offset.y += deltaX * 0.005
+
+      gsap.to(group.rotation, {
+        y: group.rotation.offset.y,
+        x: group.rotation.offset.x,
+        duration: 2
+      })
+      mouse.xPrev = event.clientX
+      mouse.yPrev = event.clientY
     }
-  } else {
-    controls.autoRotate = true;
+  })
+
+  addEventListener('mouseup', () => {
+    mouse.down = false
+  })
+
+  // Handle form submit button
+  const submitButton = document.getElementById('submitButton')
+  const popUpForm = document.getElementById('myForm')
+  if (submitButton && popUpForm) {
+    submitButton.addEventListener('click', () => {
+      popUpForm.style.display = 'none'
+    })
   }
+
+  // Handle window resize
+  addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    
+    if (visualizerCanvas) {
+      visualizerCanvas.width = window.innerWidth
+      visualizerCanvas.height = window.innerHeight
+    }
+  })
+
+  // Start the application
+  animate()
 }
-
-animate()
-
-//explore on click
-
-canvas.addEventListener('mousemove', (event) => {
-  mouse.x = ((event.clientX - innerWidth)) / (innerWidth) + .5;
-  mouse.y = -(event.clientY / innerHeight) + .5;
-  
-  // Add tooltip update
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(
-    group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
-  );
-  
-  if (intersects.length > 0) {
-    updateTooltip(event, intersects[0].object);
-  } else {
-    updateTooltip(event, null);
-  }
-});
-
-//Resize 
-window.addEventListener('resize', ()=>{
-  sizes.width = window.innerWidth
-  sizes.height = window.innerHeight
-  camera.aspect = sizes.width / sizes.height
-  camera.updateProjectionMatrix()
-  renderer.setSize(sizes.width, sizes.height)
-})
-
-const loop = () => {
-  controls.update()
-  renderer.render(scene, camera)
-  window.requestAnimationFrame(loop)
-}
-
-loop()
-
-
-
-
