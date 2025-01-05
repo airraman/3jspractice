@@ -16,19 +16,19 @@ import AudioMotionAnalyzer from 'audiomotion-analyzer'
 // =========================================
 const MaterialStates = {
   default: {
-    color: '#3BF7FF',
-    opacity: 0.4,
-    scale: 1
+      color: '#FF4B6C',  // Vibrant pink-red
+      opacity: 0.8,
+      scale: 1
   },
   hover: {
-    color: '#E6F0FF',
-    opacity: 1,
-    scale: 1.5
+      color: '#FFFFFF',  // Pure white
+      opacity: 1,
+      scale: 1.5
   },
   active: {
-    color: '#FFD700',
-    opacity: 1,
-    scale: 1.3
+      color: '#FFD700',  // Bright gold
+      opacity: 1,
+      scale: 1.8
   }
 }
 
@@ -90,6 +90,10 @@ const locations = [
 document.addEventListener('DOMContentLoaded', initializeApp)
 
 function initializeApp() {
+
+let audioContext = null
+let analyser = null
+let audioSource = null
   // =========================================
   // DOM Elements Setup
   // =========================================
@@ -112,34 +116,48 @@ function initializeApp() {
     visualizerCanvas.height = window.innerHeight
   }
 
-  function playSong() {
-    const context = new AudioContext()
-    const src = context.createMediaElementSource(recordPlayer)
-    const analyser = context.createAnalyser()
-    
-    src.connect(analyser)
-    analyser.connect(context.destination)
+function playSong() {
+    // If we already have an audio context, reuse it
+    if (!audioContext) {
+        audioContext = new AudioContext()
+        audioSource = audioContext.createMediaElementSource(recordPlayer)
+        analyser = audioContext.createAnalyser()
+        
+        audioSource.connect(analyser)
+        analyser.connect(audioContext.destination)
+    }
     
     analyser.fftSize = 256
     const bufferLength = analyser.frequencyBinCount
     const dataArray = new Uint8Array(bufferLength)
   
-   
-    // Change this line in the playSong function:
-  const ctx = visualizerCanvas.getContext("2d")
-  const WIDTH = visualizerCanvas.width
-  const HEIGHT = visualizerCanvas.height
+    const ctx = visualizerCanvas.getContext("2d")
+    const WIDTH = visualizerCanvas.width
+    const HEIGHT = visualizerCanvas.height
     const barWidth = (WIDTH / bufferLength)
     
+  // Inside your renderFrame function in playSong()
     function renderFrame() {
-      requestAnimationFrame(renderFrame)
-      
-      analyser.getByteFrequencyData(dataArray)
-      ctx.fillStyle = "#000"
-      ctx.fillRect(0, 0, WIDTH, HEIGHT)
-      
-      let x = 0
-      for (let i = 0; i < bufferLength; i++) {
+    requestAnimationFrame(renderFrame)
+    
+    analyser.getByteFrequencyData(dataArray)
+    ctx.fillStyle = "#000"
+    ctx.fillRect(0, 0, WIDTH, HEIGHT)
+    
+    // Calculate average frequency for atmosphere color
+    let sum = 0
+    for (let i = 0; i < bufferLength; i++) {
+        sum += dataArray[i]
+    }
+    const averageFrequency = sum / bufferLength
+    const normalizedFrequency = Math.min(Math.max(averageFrequency / 128, 0), 1)
+
+    // Update atmosphere color
+    atmosphere.material.uniforms.mixRatio.value = normalizedFrequency
+
+    // Draw visualization bars
+    let x = 0
+    for (let i = 0; i < bufferLength; i++) {
         const barHeight = dataArray[i] * 2.5
         const r = barHeight + (0 * (i/bufferLength))
         const g = 120 * (i/bufferLength)
@@ -148,11 +166,11 @@ function initializeApp() {
         ctx.fillStyle = `rgb(${r},${g},${b})`
         ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight)
         x += barWidth + .001
-      }
+    }
     }
     
     renderFrame()
-  }
+}
 
   recordPlayer.addEventListener("play", playSong)
 
@@ -222,15 +240,26 @@ function initializeApp() {
   sphere.rotation.y = -Math.PI / 2
 
   // Atmosphere effect
-  const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(5, 50, 50),
-    new THREE.ShaderMaterial({
+// In your globe creation section:
+const atmosphere = new THREE.Mesh(
+  new THREE.SphereGeometry(6, 50, 50),
+  new THREE.ShaderMaterial({
       vertexShader: atmosphereVertex,
       fragmentShader: atmosphereFragment,
+      uniforms: {
+          color1: { value: new THREE.Color('#3388ff') },
+          color2: { value: new THREE.Color('#ff3388') },
+          mixRatio: { value: 0.0 }
+      },
       blending: THREE.AdditiveBlending,
-      side: THREE.BackSide
-    })
-  )
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false
+  })
+)
+
+atmosphere.scale.set(1.1, 1.1, 1.1)
+scene.add(atmosphere)
 
   atmosphere.scale.set(1.1, 1.1, 1.1)
   scene.add(atmosphere)
@@ -297,15 +326,17 @@ function initializeApp() {
   // Location Points Creation
   // =========================================
   function createPoint({lat, lng, Title, Location, audio}) {
+    // Create the main box
     const box = new THREE.Mesh(
-      new THREE.BoxGeometry(0.2, 0.2, 0.8),
-      new THREE.MeshBasicMaterial({
-        color: MaterialStates.default.color,
-        opacity: MaterialStates.default.opacity,
-        transparent: true
-      })
+        new THREE.BoxGeometry(0.4, 0.4, 1.0),
+        new THREE.MeshBasicMaterial({
+            color: new THREE.Color(MaterialStates.default.color),
+            opacity: MaterialStates.default.opacity,
+            transparent: true
+        })
     )
 
+    // Position calculation
     const latitude = (lat / 180) * Math.PI
     const longitude = (lng / 180) * Math.PI
     const radius = 5
@@ -319,13 +350,14 @@ function initializeApp() {
     box.lookAt(0, 0, 0)
     box.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, -0.4))
 
+    // Pulsing animation
     gsap.to(box.scale, {
-      z: 1.4,
-      duration: 2,
-      yoyo: true,
-      repeat: -1,
-      ease: 'linear',
-      delay: Math.random()
+        z: 1.4,
+        duration: 2,
+        yoyo: true,
+        repeat: -1,
+        ease: 'linear',
+        delay: Math.random()
     })
 
     box.Title = Title
@@ -333,7 +365,8 @@ function initializeApp() {
     box.audio = audio
 
     group.add(box)
-  }
+    return box
+}
 
   locations.forEach(createPoint)
 
@@ -354,18 +387,19 @@ function initializeApp() {
                        MaterialStates.default
 
     gsap.to(mesh.material, {
-      opacity: targetState.opacity,
-      color: targetState.color,
-      duration: 0.3
+        opacity: targetState.opacity,
+        duration: 0.3
     })
     
+    mesh.material.color.set(targetState.color)
+    
     gsap.to(mesh.scale, {
-      x: targetState.scale,
-      y: targetState.scale,
-      z: targetState.scale,
-      duration: 0.3
+        x: targetState.scale,
+        y: targetState.scale,
+        z: targetState.scale,
+        duration: 0.3
     })
-  }
+}
 
   // Audio loading and playback
   async function loadAndPlaySong(marker) {
@@ -413,51 +447,38 @@ function initializeApp() {
 
   const raycaster = new THREE.Raycaster()
 
-  // =========================================
-  // Animation Loop
-  // =========================================
-  function animate() {
-    requestAnimationFrame(animate)
-    
-    controls.update()
 
-    raycaster.setFromCamera(mouse, camera)
-    const intersects = raycaster.intersectObjects(
+// =========================================
+// Animation Loop
+// =========================================
+function animate() {
+  requestAnimationFrame(animate)
+  
+  controls.update()
+
+  raycaster.setFromCamera(mouse, camera)
+  const intersects = raycaster.intersectObjects(
       group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
-    )
+  )
 
-    // Reset all markers
-    group.children.forEach((mesh) => {
+  // Reset all markers
+  group.children.forEach((mesh) => {
       if (mesh.geometry.type === 'BoxGeometry') {
-        const isMeshPlaying = recordPlayer.src.includes(mesh.audio) && !recordPlayer.paused
-        enhanceLocationMarker(mesh, false, isMeshPlaying)
+          const isMeshPlaying = recordPlayer.src.includes(mesh.audio) && !recordPlayer.paused
+          enhanceLocationMarker(mesh, false, isMeshPlaying)
       }
-    })
+  })
 
-    // Handle intersected marker
-    if (intersects.length > 0) {
+  // Handle intersected marker
+  if (intersects.length > 0) {
       const marker = intersects[0].object
-      const isPlaying = recordPlayer.src.includes(marker.audio) && !recordPlayer.paused
-      
-      enhanceLocationMarker(marker, true, isPlaying)
       controls.autoRotate = false
-      
-      if (marker.Location && songLocation.innerHTML !== marker.Location) {
-        AudioLoadingManager.showLoading()
-        songLocation.innerHTML = marker.Location
-        songTitle.innerHTML = marker.Title
-        
-        loadAndPlaySong(marker).catch(error => {
-          console.error('Error loading audio:', error)
-          AudioLoadingManager.hideLoading()
-        })
-      }
-    } else {
+  } else {
       controls.autoRotate = true
-    }
-
-    renderer.render(scene, camera)
   }
+
+  renderer.render(scene, camera)
+}
 
   // =========================================
   // Event Listeners
@@ -503,6 +524,30 @@ function initializeApp() {
       popUpForm.style.display = 'none'
     })
   }
+
+  canvas.addEventListener('click', (event) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+
+    raycaster.setFromCamera(mouse, camera)
+    const intersects = raycaster.intersectObjects(
+        group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
+    )
+
+    if (intersects.length > 0) {
+        const marker = intersects[0].object
+        if (marker.Location && songLocation.innerHTML !== marker.Location) {
+            AudioLoadingManager.showLoading()
+            songLocation.innerHTML = marker.Location
+            songTitle.innerHTML = marker.Title
+            
+            loadAndPlaySong(marker).catch(error => {
+                console.error('Error loading audio:', error)
+                AudioLoadingManager.hideLoading()
+            })
+        }
+    }
+})
 
   // Add after your existing form handling code
 

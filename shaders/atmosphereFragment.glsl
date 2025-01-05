@@ -5,10 +5,7 @@ uniform float mixRatio;
 varying vec3 vertexNormal;
 
 void main() {
-    float intensity = pow(.6 - dot(vertexNormal, vec3(0,0,1)), 2.0);
-    
-    // Mix between the two colors based on mixRatio
+    float intensity = pow(0.8 - dot(normalize(vertexNormal), vec3(0, 0, 1.0)), 2.0);
     vec3 finalColor = mix(color1, color2, mixRatio);
-    
-    gl_FragColor = vec4(finalColor, 1.0) * intensity;
+    gl_FragColor = vec4(finalColor, intensity);
 }
