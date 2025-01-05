@@ -404,46 +404,59 @@ scene.add(atmosphere)
   // Audio loading and playback
   async function loadAndPlaySong(marker) {
     return new Promise((resolve, reject) => {
-      if (!marker.audio) {
-        reject(new Error('No audio source provided'))
-        return
-      }
+        if (!marker.audio) {
+            reject(new Error('No audio source provided'));
+            return;
+        }
 
-      const handleSuccess = () => {
-        AudioLoadingManager.hideLoading()
-        recordPlayer.play()
-          .then(resolve)
-          .catch(reject)
-        cleanup()
-      }
+        const handleSuccess = () => {
+            AudioLoadingManager.hideLoading();
+            // Initialize audio context on user interaction
+            if (!audioContext) {
+                audioContext = new AudioContext();
+                audioSource = audioContext.createMediaElementSource(recordPlayer);
+                analyser = audioContext.createAnalyser();
+                audioSource.connect(analyser);
+                analyser.connect(audioContext.destination);
+            }
+            
+            recordPlayer.play()
+                .then(() => {
+                    updateRotationSpeed(true);
+                    resolve();
+                })
+                .catch(reject);
+            cleanup();
+        };
 
-      const handleError = () => {
-        cleanup()
-        reject(new Error('Failed to load audio'))
-      }
+        const handleError = () => {
+            cleanup();
+            reject(new Error('Failed to load audio'));
+        };
 
-      const cleanup = () => {
-        recordPlayer.removeEventListener('canplay', handleSuccess)
-        recordPlayer.removeEventListener('error', handleError)
-      }
+        const cleanup = () => {
+            recordPlayer.removeEventListener('canplay', handleSuccess);
+            recordPlayer.removeEventListener('error', handleError);
+        };
 
-      recordPlayer.addEventListener('canplay', handleSuccess, { once: true })
-      recordPlayer.addEventListener('error', handleError, { once: true })
-      
-      recordPlayer.src = marker.audio
-    })
-  }
+        recordPlayer.addEventListener('canplay', handleSuccess, { once: true });
+        recordPlayer.addEventListener('error', handleError, { once: true });
+        recordPlayer.addEventListener('ended', () => updateRotationSpeed(false));
+        
+        recordPlayer.src = marker.audio;
+    });
+}
 
   // Controls setup
-  const controls = new OrbitControls(camera, canvas)
-  controls.enableDamping = true
-  controls.enablePan = false
-  controls.enableZoom = false
-  controls.autoRotate = true
-  controls.autoRotateSpeed = 0.5
-  controls.rotateSpeed = 0.5
-  controls.minPolarAngle = Math.PI * 0.2
-  controls.maxPolarAngle = Math.PI * 0.8
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.enablePan = false;
+  controls.enableZoom = false;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.5; // Default speed
+  controls.rotateSpeed = 0.5;
+  controls.minPolarAngle = Math.PI * 0.2;
+  controls.maxPolarAngle = Math.PI * 0.8;
 
   const raycaster = new THREE.Raycaster()
 
@@ -452,37 +465,87 @@ scene.add(atmosphere)
 // Animation Loop
 // =========================================
 function animate() {
-  requestAnimationFrame(animate)
+  requestAnimationFrame(animate);
   
-  controls.update()
+  controls.update();
 
-  raycaster.setFromCamera(mouse, camera)
+  raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(
       group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
-  )
+  );
 
   // Reset all markers
   group.children.forEach((mesh) => {
       if (mesh.geometry.type === 'BoxGeometry') {
-          const isMeshPlaying = recordPlayer.src.includes(mesh.audio) && !recordPlayer.paused
-          enhanceLocationMarker(mesh, false, isMeshPlaying)
+          const isMeshPlaying = recordPlayer.src.includes(mesh.audio) && !recordPlayer.paused;
+          enhanceLocationMarker(mesh, false, isMeshPlaying);
+          
+          // Adjust rotation speed based on playback
+          if (isMeshPlaying) {
+              controls.autoRotateSpeed = 0.2; // Slower rotation when playing
+          } else if (!recordPlayer.src) {
+              controls.autoRotateSpeed = 0.5; // Default speed when nothing is playing
+          }
       }
-  })
+  });
 
   // Handle intersected marker
   if (intersects.length > 0) {
-      const marker = intersects[0].object
-      controls.autoRotate = false
-  } else {
-      controls.autoRotate = true
+      const marker = intersects[0].object;
+      const isPlaying = recordPlayer.src.includes(marker.audio) && !recordPlayer.paused;
+      enhanceLocationMarker(marker, true, isPlaying);
   }
 
-  renderer.render(scene, camera)
+  renderer.render(scene, camera);
+}
+
+function updateRotationSpeed(isPlaying) {
+  controls.autoRotate = true; // Always keep rotating
+  controls.autoRotateSpeed = isPlaying ? 0.2 : 0.5; // Adjust speed based on playback
 }
 
   // =========================================
   // Event Listeners
   // =========================================
+
+  function handleInteraction(event) {
+    // Prevent default behavior
+    event.preventDefault();
+
+    // Get the position for both touch and click events
+    const x = event.clientX || (event.touches && event.touches[0].clientX);
+    const y = event.clientY || (event.touches && event.touches[0].clientY);
+
+    // Convert to normalized device coordinates
+    mouse.x = (x / window.innerWidth) * 2 - 1;
+    mouse.y = -(y / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(
+        group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
+    );
+
+    if (intersects.length > 0) {
+        const marker = intersects[0].object;
+        // Force autoRotate to true but at a slower speed
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.2; // Reduced speed when playing
+
+        // Update display and play song
+        AudioLoadingManager.showLoading();
+        songLocation.innerHTML = marker.Location;
+        songTitle.innerHTML = marker.Title;
+        
+        loadAndPlaySong(marker).catch(error => {
+            console.error('Error loading audio:', error);
+            AudioLoadingManager.hideLoading();
+        });
+    }
+}
+
+canvas.addEventListener('click', handleInteraction, { passive: false });
+canvas.addEventListener('touchstart', handleInteraction, { passive: false });
+
   canvas.addEventListener('mousedown', ({ clientX, clientY }) => {
     mouse.down = true
     mouse.xPrev = clientX
@@ -525,29 +588,7 @@ function animate() {
     })
   }
 
-  canvas.addEventListener('click', (event) => {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 
-    raycaster.setFromCamera(mouse, camera)
-    const intersects = raycaster.intersectObjects(
-        group.children.filter(mesh => mesh.geometry.type === 'BoxGeometry')
-    )
-
-    if (intersects.length > 0) {
-        const marker = intersects[0].object
-        if (marker.Location && songLocation.innerHTML !== marker.Location) {
-            AudioLoadingManager.showLoading()
-            songLocation.innerHTML = marker.Location
-            songTitle.innerHTML = marker.Title
-            
-            loadAndPlaySong(marker).catch(error => {
-                console.error('Error loading audio:', error)
-                AudioLoadingManager.hideLoading()
-            })
-        }
-    }
-})
 
   // Add after your existing form handling code
 
