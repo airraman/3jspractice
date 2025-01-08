@@ -91,9 +91,10 @@ document.addEventListener('DOMContentLoaded', initializeApp)
 
 function initializeApp() {
 
-let audioContext = null
-let analyser = null
-let audioSource = null
+
+  let audioContext = null
+  let analyser = null
+  let audioSource = null
   // =========================================
   // DOM Elements Setup
   // =========================================
@@ -104,7 +105,6 @@ let audioSource = null
   }
 
   const recordPlayer = document.getElementById('song')
-  const popUpEl = document.querySelector('#popUpElement')
   const songTitle = document.querySelector('#songTitle')
   const songLocation = document.querySelector('#songLocation')
   const loadingIndicator = document.getElementById('loading-indicator')
@@ -172,26 +172,26 @@ function playSong() {
     renderFrame()
 }
 
-  recordPlayer.addEventListener("play", playSong)
+recordPlayer.addEventListener("play", playSong)
 
-  // =========================================
-  // Audio Loading Manager
-  // =========================================
-  const AudioLoadingManager = {
+// =========================================
+// Audio Loading Manager
+// =========================================
+const AudioLoadingManager = {
     loadingIndicator,
-    
+
     showLoading() {
       if (this.loadingIndicator) {
         this.loadingIndicator.classList.remove('loading-hidden')
       }
     },
-    
+
     hideLoading() {
       if (this.loadingIndicator) {
         this.loadingIndicator.classList.add('loading-hidden')
       }
     },
-    
+
     updateLoadingProgress(progress) {
       if (this.loadingIndicator) {
         const text = this.loadingIndicator.querySelector('.loading-text')
@@ -200,32 +200,32 @@ function playSong() {
         }
       }
     }
-  }
+}
 
-  // =========================================
-  // Three.js Scene Setup
-  // =========================================
-  const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(
-    100,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-  )
+// =========================================
+// Three.js Scene Setup
+// =========================================
+const scene = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(
+  100,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  2000
+)
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true
-  })
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  renderer.setPixelRatio(window.devicePixelRatio)
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true
+})
+renderer.setSize(window.innerWidth, window.innerHeight)
+renderer.setPixelRatio(window.devicePixelRatio)
 
-  // =========================================
-  // Globe Creation
-  // =========================================
-  const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(5, 50, 50),
-    new THREE.ShaderMaterial({
+// =========================================
+// Globe Creation
+// =========================================
+const sphere = new THREE.Mesh(
+  new THREE.SphereGeometry(5, 50, 50),
+  new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
       uniforms: {
@@ -234,12 +234,12 @@ function playSong() {
         }
       }
     })
-  )
+)
 
-  // Initial sphere rotation
+// Initial sphere rotation
   sphere.rotation.y = -Math.PI / 2
 
-  // Atmosphere effect
+// Atmosphere effect
 // In your globe creation section:
 const atmosphere = new THREE.Mesh(
   new THREE.SphereGeometry(6, 50, 50),
@@ -261,17 +261,17 @@ const atmosphere = new THREE.Mesh(
 atmosphere.scale.set(1.1, 1.1, 1.1)
 scene.add(atmosphere)
 
-  atmosphere.scale.set(1.1, 1.1, 1.1)
-  scene.add(atmosphere)
+atmosphere.scale.set(1.1, 1.1, 1.1)
+scene.add(atmosphere)
 
-  const group = new THREE.Group()
-  group.add(sphere)
-  scene.add(group)
+const group = new THREE.Group()
+group.add(sphere)
+scene.add(group)
 
-  // =========================================
-  // Star Field Creation
-  // =========================================
-  function createStarField() {
+// =========================================
+// Star Field Creation
+// =========================================
+function createStarField() {
     const starGeometry = new THREE.BufferGeometry()
     const starMaterial = new THREE.PointsMaterial({
       color: 0xffffff
@@ -291,11 +291,11 @@ scene.add(atmosphere)
     )
 
     return new THREE.Points(starGeometry, starMaterial)
-  }
+}
 
-  scene.add(createStarField())
+scene.add(createStarField())
 
-  function createSecondStarField() {
+function createSecondStarField() {
     const starGeometry = new THREE.BufferGeometry()
     const starMaterial = new THREE.PointsMaterial({
       color: 0xffffff
@@ -315,17 +315,17 @@ scene.add(atmosphere)
     )
 
     return new THREE.Points(starGeometry, starMaterial)
-  }
+}
 
 
-  scene.add(createSecondStarField())
+scene.add(createSecondStarField())
 
-  camera.position.z = 15
+camera.position.z = 15
 
-  // =========================================
-  // Location Points Creation
-  // =========================================
-  function createPoint({lat, lng, Title, Location, audio}) {
+// =========================================
+// Location Points Creation
+// =========================================
+function createPoint({lat, lng, Title, Location, audio}) {
     // Create the main box
     const box = new THREE.Mesh(
         new THREE.BoxGeometry(0.4, 0.4, 1.0),
@@ -335,7 +335,6 @@ scene.add(atmosphere)
             transparent: true
         })
     )
-
     // Position calculation
     const latitude = (lat / 180) * Math.PI
     const longitude = (lng / 180) * Math.PI
@@ -368,20 +367,20 @@ scene.add(atmosphere)
     return box
 }
 
-  locations.forEach(createPoint)
+locations.forEach(createPoint)
 
-  // =========================================
-  // Interaction Setup
-  // =========================================
+// =========================================
+// Interaction Setup
+// =========================================
   const mouse = {
     x: undefined,
     y: undefined,
     down: false,
     xPrev: undefined,
     yPrev: undefined
-  }
+}
 
-  function enhanceLocationMarker(mesh, isHovered, isPlaying) {
+function enhanceLocationMarker(mesh, isHovered, isPlaying) {
     const targetState = isPlaying ? MaterialStates.active :
                        isHovered ? MaterialStates.hover :
                        MaterialStates.default
@@ -401,8 +400,8 @@ scene.add(atmosphere)
     })
 }
 
-  // Audio loading and playback
-  async function loadAndPlaySong(marker) {
+// Audio loading and playback
+async function loadAndPlaySong(marker) {
     return new Promise((resolve, reject) => {
         if (!marker.audio) {
             reject(new Error('No audio source provided'));
@@ -448,17 +447,16 @@ scene.add(atmosphere)
 }
 
   // Controls setup
-  const controls = new OrbitControls(camera, canvas);
-  controls.enableDamping = true;
-  controls.enablePan = false;
-  controls.enableZoom = false;
-  controls.autoRotate = true;
-  controls.autoRotateSpeed = 0.5; // Default speed
-  controls.rotateSpeed = 0.5;
-  controls.minPolarAngle = Math.PI * 0.2;
-  controls.maxPolarAngle = Math.PI * 0.8;
-
-  const raycaster = new THREE.Raycaster()
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.enableZoom = false;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.5; // Default speed
+controls.rotateSpeed = 0.5;
+controls.minPolarAngle = Math.PI * 0.2;
+controls.maxPolarAngle = Math.PI * 0.8;
+const raycaster = new THREE.Raycaster()
 
 
 // =========================================
@@ -501,14 +499,14 @@ function animate() {
 
 function updateRotationSpeed(isPlaying) {
   controls.autoRotate = true; // Always keep rotating
-  controls.autoRotateSpeed = isPlaying ? 0.2 : 0.5; // Adjust speed based on playback
+  controls.autoRotateSpeed = isPlaying ? 0.3 : 0.5; // Adjust speed based on playback
 }
 
   // =========================================
   // Event Listeners
   // =========================================
 
-  function handleInteraction(event) {
+function handleInteraction(event) {
     // Prevent default behavior
     event.preventDefault();
 
@@ -546,13 +544,13 @@ function updateRotationSpeed(isPlaying) {
 canvas.addEventListener('click', handleInteraction, { passive: false });
 canvas.addEventListener('touchstart', handleInteraction, { passive: false });
 
-  canvas.addEventListener('mousedown', ({ clientX, clientY }) => {
+canvas.addEventListener('mousedown', ({ clientX, clientY }) => {
     mouse.down = true
     mouse.xPrev = clientX
     mouse.yPrev = clientY
-  })
+})
 
-  addEventListener('mousemove', (event) => {
+addEventListener('mousemove', (event) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 
@@ -573,128 +571,147 @@ canvas.addEventListener('touchstart', handleInteraction, { passive: false });
       mouse.xPrev = event.clientX
       mouse.yPrev = event.clientY
     }
-  })
+})
 
-  addEventListener('mouseup', () => {
-    mouse.down = false
-  })
+addEventListener('mouseup', () => {
+   mouse.down = false
+})
 
-  // Handle form submit button
+// Handle form submit button
+
+
+
+
+// Add after your existing form handling code
+
+
+function initializeForm() {
+  // Get all DOM elements
+  const form = document.getElementById('myForm')
   const submitButton = document.getElementById('submitButton')
-  const popUpForm = document.getElementById('myForm')
-  if (submitButton && popUpForm) {
-    submitButton.addEventListener('click', () => {
-      popUpForm.style.display = 'none'
-    })
-  }
+  const buttonText = submitButton.querySelector('.button-text')
+  const buttonLoader = submitButton.querySelector('.button-loader')
+  const formMessage = document.getElementById('formMessage')
+  const phoneInput = document.getElementById('phoneNumber')
+  const backdrop = document.querySelector('.backdrop')
+  const subscriptionDialog = document.getElementById('subscriptionDialog')
+  const acceptSubscription = document.getElementById('acceptSubscription')
+  const declineSubscription = document.getElementById('declineSubscription')
 
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7tHnAV1TdhnDo-ci02Wd87WztdAn8UEmmcEK8r7r4KZXVascnYLy0M_TN7cF8zeEfug/exec'
 
+  // Set initial button state
+  submitButton.disabled = true
+  submitButton.style.backgroundColor = "#555"
+  submitButton.style.cursor = "not-allowed"
 
-  // Add after your existing form handling code
-
-
-  function initializeForm() {
-    const form = document.getElementById('myForm')
-    const submitButton = document.getElementById('submitButton')
-    const buttonText = submitButton.querySelector('.button-text')
-    const buttonLoader = submitButton.querySelector('.button-loader')
-    const formMessage = document.getElementById('formMessage')
-    const phoneInput = document.getElementById('phoneNumber')
-    const backdrop = document.querySelector('.backdrop')
-    
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7tHnAV1TdhnDo-ci02Wd87WztdAn8UEmmcEK8r7r4KZXVascnYLy0M_TN7cF8zeEfug/exec'
-    
-    // Phone number validation
-    function isValidPhoneNumber(phone) {
+  // Phone number validation
+  function isValidPhoneNumber(phone) {
       const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
       return phoneRegex.test(phone)
-    }
-    
-    async function submitPhoneNumber(phoneNumber) {
-      console.log('Attempting to submit phone number:', phoneNumber) // Debug log
-      
-      try {
-        buttonText.classList.add('hidden')
-        buttonLoader.classList.remove('hidden')
-        
-        // Format the data
-        const formData = {
-          phoneNumber: phoneNumber,
-          timestamp: new Date().toISOString()
-        }
-        
-        console.log('Sending data:', formData) // Debug log
-        
-        const response = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors', // Important for Google Apps Script
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData)
-        })
-        
-        console.log('Response received:', response) // Debug log
-        
-        // Since mode is no-cors, we can't read the response
-        // Instead, we'll assume success if the request didn't throw an error
-        formMessage.textContent = 'Thank you for subscribing!'
-        formMessage.style.color = '#4CAF50'
-        
-        // Store in localStorage to prevent showing form again
-        localStorage.setItem('formSubmitted', 'true')
-        
-        setTimeout(() => {
-          form.style.display = 'none'
-          if (backdrop) backdrop.style.display = 'none'
-        }, 2000)
-        
-      } catch (error) {
-        console.error('Submission error:', error) // Debug log
-        formMessage.textContent = 'Something went wrong. Please try again.'
-        formMessage.style.color = '#f44336'
-      } finally {
-        buttonText.classList.remove('hidden')
-        buttonLoader.classList.add('hidden')
+  }
+
+  // Phone input handler
+  phoneInput.addEventListener("input", () => {
+      const digitsOnly = phoneInput.value.replace(/\D/g, '')
+      if (digitsOnly.length === 10) {
+          submitButton.disabled = false
+          submitButton.style.backgroundColor = "#1a365d"
+          submitButton.style.cursor = "pointer"
+      } else {
+          submitButton.disabled = true
+          submitButton.style.backgroundColor = "#555"
+          submitButton.style.cursor = "not-allowed"
       }
-    }
-    
-    // Form submission handler
-    submitButton.addEventListener('click', async (e) => {
+  })
+
+  // Phone number submission
+  async function submitPhoneNumber(phoneNumber) {
+      try {
+          buttonText.classList.add('hidden')
+          buttonLoader.classList.remove('hidden')
+          
+          const formData = {
+              phoneNumber: phoneNumber,
+              timestamp: new Date().toISOString()
+          }
+          
+          const response = await fetch(SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(formData)
+          })
+
+          formMessage.textContent = 'Thank you!'
+          formMessage.style.color = '#4CAF50'
+          
+          // Show subscription dialog
+          subscriptionDialog.classList.remove('dialog-hidden')
+          
+      } catch (error) {
+          console.error('Submission error:', error)
+          formMessage.textContent = 'Something went wrong. Please try again.'
+          formMessage.style.color = '#f44336'
+      } finally {
+          buttonText.classList.remove('hidden')
+          buttonLoader.classList.add('hidden')
+      }
+  }
+
+  // Form submit handler
+  submitButton.addEventListener('click', async (e) => {
       e.preventDefault()
       
       const phoneNumber = phoneInput.value.trim()
-      console.log('Submit clicked, phone number:', phoneNumber) // Debug log
       
       if (!phoneNumber) {
-        formMessage.textContent = 'Please enter your phone number'
-        formMessage.style.color = '#f44336'
-        return
+          formMessage.textContent = 'Please enter your phone number'
+          formMessage.style.color = '#f44336'
+          return
       }
       
       if (!isValidPhoneNumber(phoneNumber)) {
-        formMessage.textContent = 'Please enter a valid phone number'
-        formMessage.style.color = '#f44336'
-        return
+          formMessage.textContent = 'Please enter a valid phone number'
+          formMessage.style.color = '#f44336'
+          return
       }
       
       await submitPhoneNumber(phoneNumber)
-    })
-    
-    // Check if form was already submitted
-    if (localStorage.getItem('formSubmitted') === 'true') {
-      form.style.display = 'none'
-      if (backdrop) backdrop.style.display = 'none'
-    }
-  }
-  
-  // Call initializeForm after DOM is loaded
-  document.addEventListener('DOMContentLoaded', () => {
-    initializeForm()
   })
 
+  // Subscription dialog handlers
+  acceptSubscription.addEventListener('click', () => {
+      localStorage.setItem('subscribed', 'true')
+      localStorage.setItem('formSubmitted', 'true')
+      subscriptionDialog.classList.add('dialog-hidden')
+      form.style.display = 'none'
+      if (backdrop) backdrop.style.display = 'none'
+  })
+  
+  declineSubscription.addEventListener('click', () => {
+      localStorage.setItem('formSubmitted', 'true')
+      subscriptionDialog.classList.add('dialog-hidden')
+      form.style.display = 'none'
+      if (backdrop) backdrop.style.display = 'none'
+  })
+
+  // Check if form was already submitted
+  if (localStorage.getItem('formSubmitted') === 'true') {
+      form.style.display = 'none'
+      if (backdrop) backdrop.style.display = 'none'
+  }
+}
+
+// Call initializeForm after DOM is loaded
+// document.addEventListener('DOMContentLoaded', () => {
+//   initializeForm()
+// })
+
   // Handle window resize
-  addEventListener('resize', () => {
+addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -703,8 +720,9 @@ canvas.addEventListener('touchstart', handleInteraction, { passive: false });
       visualizerCanvas.width = window.innerWidth
       visualizerCanvas.height = window.innerHeight
     }
-  })
+})
 
   // Start the application
   animate()
+  initializeForm()
 }

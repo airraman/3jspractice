@@ -8,7 +8,6 @@
   </head>
   <body>
     <!-- Login Form -->
-<!-- Replace your current form-popup div with this -->
 <div class="form-popup" id="myForm">
   <div class="form-container">
     <p class="form-title">Welcome to SongMap</p>
@@ -25,6 +24,16 @@
       <div class="button-loader hidden"></div>
     </button>
     <p id="formMessage" class="form-message"></p>
+  </div>
+</div>
+<div id="subscriptionDialog" class="dialog-hidden">
+  <div class="dialog-content">
+      <h2>Weekly Songs</h2>
+      <p>Would you like to receive weekly song recommendations via text?</p>
+      <div class="dialog-buttons">
+          <button id="acceptSubscription" class="dialog-btn accept">Yes, sign me up!</button>
+          <button id="declineSubscription" class="dialog-btn decline">No, thanks</button>
+      </div>
   </div>
 </div>
 
