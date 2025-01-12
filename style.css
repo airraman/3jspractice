@@ -153,7 +153,93 @@ html{
     margin-right: auto;
     justify-content: center;
     border-radius: 50px;
-    margin-bottom: 1vh;
+    margin-bottom: 2vh;
+}
+
+/* Album Covers Styling */
+.album-covers-container {
+  position: relative;
+  width: 80vw;
+  margin: 0 auto 2vh auto;
+  z-index: 1;
+}
+
+.album-covers {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1rem;
+}
+
+.album-cover {
+  position: relative;
+  width: calc((80vw - 7rem) / 6);
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.album-cover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 15px rgba(188, 210, 241, 0.5);
+}
+
+.album-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.3s ease;
+}
+
+.album-cover:hover img {
+  filter: brightness(0.7);
+}
+
+.album-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-family: monospace;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.album-cover:hover .album-info {
+  opacity: 1;
+}
+
+.album-title {
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-bottom: 0.2rem;
+}
+
+.album-location {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.album-cover.playing {
+  border: 2px solid #BCD2F1;
+  box-shadow: 0 0 20px rgba(188, 210, 241, 0.8);
+}
+
+.album-cover.playing img {
+  filter: brightness(0.8);
+}
+
+.album-cover.playing .album-info {
+  opacity: 1;
 }
 
 .circle {

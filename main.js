@@ -47,42 +47,48 @@ const locations = [
     lng: 2.3522,
     Title: "6am in Paris",
     Location: "paris",
-    audio: musicLibary.paris
+    audio: musicLibary.paris, 
+    img: "public/img/albumImages/paris.png"
   },
   {
     lat: 51.5074,   // London
     lng: -0.1278,
     Title: "memory lane",
     Location: "london",
-    audio: musicLibary.london
+    audio: musicLibary.london, 
+    img: "public/img/albumImages/london.jpg"
   },
   {
     lat: 38.7223,   // Lisbon
     lng: -9.1393,
     Title: "summer in lisbon",
     Location: "lisbon",
-    audio: musicLibary.lisbon
+    audio: musicLibary.lisbon, 
+    img: "public/img/albumImages/lisbon.jpg"
   },
   {
     lat: 40.6782,   // Brooklyn
     lng: -73.9442,
     Title: "bushwick yacht club",
     Location: "bushwick",
-    audio: musicLibary.brooklyn
+    audio: musicLibary.brooklyn, 
+    img: "public/img/albumImages/bushwick.png"
   },
   {
     lat: 37.8044,   // Oakland
     lng: -122.2712,
     Title: "somewhere out in oakland",
     Location: "LA",
-    audio: musicLibary.oakland
+    audio: musicLibary.oakland, 
+    img: "public/img/albumImages/oakland.png"
   },
   {
     lat: -33.8688,  // Sydney
     lng: 151.2093,
     Title: "skyclub",
     Location: "sydney",
-    audio: musicLibary.sydney
+    audio: musicLibary.sydney,
+    img: "public/img/albumImages/sydney.png"
   }
 ]
 
@@ -452,7 +458,7 @@ controls.enableDamping = true;
 controls.enablePan = false;
 controls.enableZoom = false;
 controls.autoRotate = true;
-controls.autoRotateSpeed = 0.5; // Default speed
+controls.autoRotateSpeed = 0.75; // Default speed
 controls.rotateSpeed = 0.5;
 controls.minPolarAngle = Math.PI * 0.2;
 controls.maxPolarAngle = Math.PI * 0.8;
@@ -480,7 +486,7 @@ function animate() {
           
           // Adjust rotation speed based on playback
           if (isMeshPlaying) {
-              controls.autoRotateSpeed = 0.2; // Slower rotation when playing
+              controls.autoRotateSpeed = 1.2; // Slower rotation when playing
           } else if (!recordPlayer.src) {
               controls.autoRotateSpeed = 0.5; // Default speed when nothing is playing
           }
@@ -501,6 +507,128 @@ function updateRotationSpeed(isPlaying) {
   controls.autoRotate = true; // Always keep rotating
   controls.autoRotateSpeed = isPlaying ? 0.3 : 0.5; // Adjust speed based on playback
 }
+
+  // =========================================
+  // Album Cover Interactions
+  // =========================================
+
+    // Function to generate album covers HTML
+    function generateAlbumCovers() {
+      const container = document.querySelector('.album-covers');
+      if (!container) return;
+  
+      // Clear existing content
+      container.innerHTML = '';
+  
+      // Generate album covers from locations data
+      locations.forEach(location => {
+          const albumCover = document.createElement('div');
+          albumCover.className = 'album-cover';
+          albumCover.dataset.location = location.Location.toLowerCase();
+  
+          // Create image element
+          const img = document.createElement('img');
+          img.src = location.img;
+          img.alt = `${location.Title} Album Cover`;
+  
+          // Create info overlay
+          const albumInfo = document.createElement('div');
+          albumInfo.className = 'album-info';
+          
+          const titleSpan = document.createElement('span');
+          titleSpan.className = 'album-title';
+          titleSpan.textContent = location.Title;
+          
+          const locationSpan = document.createElement('span');
+          locationSpan.className = 'album-location';
+          locationSpan.textContent = location.Location;
+  
+          // Assemble the elements
+          albumInfo.appendChild(titleSpan);
+          albumInfo.appendChild(locationSpan);
+          albumCover.appendChild(img);
+          albumCover.appendChild(albumInfo);
+          container.appendChild(albumCover);
+  
+          // Add click event listener
+          albumCover.addEventListener('click', handleAlbumCoverClick);
+      });
+    }
+
+  function handleAlbumCoverClick(event) {
+    const albumCover = event.currentTarget;
+    const location = albumCover.dataset.location;
+    
+    // Find corresponding marker
+    const marker = group.children.find(mesh => 
+      mesh.geometry.type === 'BoxGeometry' && 
+      mesh.Location.toLowerCase() === location.toLowerCase()
+    );
+
+    if (marker) {
+      // Update UI
+      AudioLoadingManager.showLoading();
+      songLocation.innerHTML = marker.Location;
+      songTitle.innerHTML = marker.Title;
+
+      // Remove playing class from all album covers
+      document.querySelectorAll('.album-cover').forEach(cover => {
+        cover.classList.remove('playing');
+      });
+
+      // Add playing class to clicked album
+      albumCover.classList.add('playing');
+
+      // Load and play the song
+      loadAndPlaySong(marker).catch(error => {
+        console.error('Error loading audio:', error);
+        AudioLoadingManager.hideLoading();
+      });
+
+      // Animate camera to marker position
+      const markerPosition = new THREE.Vector3();
+      marker.getWorldPosition(markerPosition);
+      
+      // Calculate camera target position
+      const distance = 20; // Adjust this value to control how close the camera gets
+      const cameraTargetPosition = markerPosition.clone().normalize().multiplyScalar(distance);
+      
+      // Animate camera movement
+      gsap.to(camera.position, {
+        x: cameraTargetPosition.x,
+        y: cameraTargetPosition.y,
+        z: cameraTargetPosition.z,
+        duration: 1.5,
+        ease: "power2.inOut"
+      });
+    }
+  }
+
+    // Generate album covers and add click listeners
+    generateAlbumCovers();
+
+    // Update playing state of album covers when a marker is clicked
+    function updateAlbumCoversState(marker) {
+      document.querySelectorAll('.album-cover').forEach(cover => {
+        const isPlaying = marker && 
+          cover.dataset.location.toLowerCase() === marker.Location.toLowerCase();
+        cover.classList.toggle('playing', isPlaying);
+      });
+    }
+
+  // Add click listeners to album covers
+  document.querySelectorAll('.album-cover').forEach(albumCover => {
+    albumCover.addEventListener('click', handleAlbumCoverClick);
+  });
+
+  // Update playing state of album covers when a marker is clicked
+  function updateAlbumCoversState(marker) {
+    document.querySelectorAll('.album-cover').forEach(cover => {
+      const isPlaying = marker && 
+        cover.dataset.location.toLowerCase() === marker.Location.toLowerCase();
+      cover.classList.toggle('playing', isPlaying);
+    });
+  }
 
   // =========================================
   // Event Listeners
