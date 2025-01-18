@@ -48,7 +48,7 @@ const locations = [
     Title: "6am in Paris",
     Location: "paris",
     audio: musicLibary.paris, 
-    img: "public/img/albumImages/paris.png"
+    img: "/img/albumImages/paris.png"
   },
   {
     lat: 51.5074,   // London
@@ -56,7 +56,7 @@ const locations = [
     Title: "memory lane",
     Location: "london",
     audio: musicLibary.london, 
-    img: "public/img/albumImages/london.jpg"
+    img: "/img/albumImages/london.jpg"
   },
   {
     lat: 38.7223,   // Lisbon
@@ -64,7 +64,7 @@ const locations = [
     Title: "summer in lisbon",
     Location: "lisbon",
     audio: musicLibary.lisbon, 
-    img: "public/img/albumImages/lisbon.jpg"
+    img: "/img/albumImages/lisbon.jpg"
   },
   {
     lat: 40.6782,   // Brooklyn
@@ -72,7 +72,7 @@ const locations = [
     Title: "bushwick yacht club",
     Location: "bushwick",
     audio: musicLibary.brooklyn, 
-    img: "public/img/albumImages/bushwick.png"
+    img: "/img/albumImages/bushwick.png"
   },
   {
     lat: 37.8044,   // Oakland
@@ -80,7 +80,7 @@ const locations = [
     Title: "somewhere out in oakland",
     Location: "LA",
     audio: musicLibary.oakland, 
-    img: "public/img/albumImages/oakland.png"
+    img: "/img/albumImages/oakland.png"
   },
   {
     lat: -33.8688,  // Sydney
@@ -88,14 +88,122 @@ const locations = [
     Title: "skyclub",
     Location: "sydney",
     audio: musicLibary.sydney,
-    img: "public/img/albumImages/sydney.png"
+    img: "/img/albumImages/sydney.png"
   }
 ]
+
+let userAuthState = {
+  isLoggedIn: false,
+  phone: null,
+  lastLoginTimestamp: null
+};
 
 // Initialize application when DOM is ready
 document.addEventListener('DOMContentLoaded', initializeApp)
 
+
+//Initialize App is where all of the functions of the globe are stored, including interactivity
+
 function initializeApp() {
+
+
+  //create a variable called loggedIn which determines if a users has input their phone number
+
+  const savedAuthState = localStorage.getItem('userAuthState');
+  if (savedAuthState) {
+      userAuthState = JSON.parse(savedAuthState);
+  }
+
+  // Hide form and backdrop initially
+const backdrop = document.querySelector('.backdrop');
+const form = document.querySelector('.form-popup');
+if (backdrop) backdrop.style.display = 'none';
+if (form) form.style.display = 'none';
+
+function updateUIBasedOnAuth() {
+  const musicInteractiveElements = document.querySelectorAll('.album-cover');
+  const audioPlayer = document.getElementById('song');
+  const backdrop = document.querySelector('.backdrop');
+  const form = document.querySelector('.form-popup');
+
+  function handleMusicInteraction(e) {
+      if (!userAuthState.isLoggedIn) {
+          e.preventDefault();
+          e.stopPropagation();
+          backdrop.style.display = 'block';
+          form.style.display = 'block';
+      }
+  }
+
+  function preventAudioPlayback(e) {
+      if (!userAuthState.isLoggedIn) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (audioPlayer.play) {
+              audioPlayer.pause(); // Make sure audio doesn't play
+          }
+          backdrop.style.display = 'block';
+          form.style.display = 'block';
+          return false;
+      }
+  }
+
+  if (userAuthState.isLoggedIn) {
+      // Enable audio player
+      audioPlayer.classList.remove('audio-disabled');
+      audioPlayer.removeEventListener('play', preventAudioPlayback, true);
+      audioPlayer.removeEventListener('playing', preventAudioPlayback, true);
+      audioPlayer.removeEventListener('click', handleMusicInteraction, true);
+      
+      // Remove other interaction blockers
+      musicInteractiveElements.forEach(el => {
+          el.removeEventListener('click', handleMusicInteraction);
+      });
+      backdrop.style.display = 'none';
+      form.style.display = 'none';
+  } else {
+      // Set up audio player interaction handling
+      audioPlayer.classList.add('audio-disabled');
+      audioPlayer.pause(); // Ensure audio is paused initially
+      
+      // Add event listeners to handle both click for form display and play prevention
+      audioPlayer.addEventListener('click', handleMusicInteraction);
+      audioPlayer.addEventListener('play', preventAudioPlayback, true);
+      audioPlayer.addEventListener('playing', preventAudioPlayback, true);
+      
+      // Add other interaction blockers
+      musicInteractiveElements.forEach(el => {
+          el.addEventListener('click', handleMusicInteraction);
+      });
+      
+      // Initially hide form and backdrop
+      backdrop.style.display = 'none';
+      form.style.display = 'none';
+  }
+}
+
+// Make sure to add this event listener for the audio player itself
+document.getElementById('song').addEventListener('click', function(e) {
+  if (!userAuthState.isLoggedIn) {
+      e.preventDefault();
+      const backdrop = document.querySelector('.backdrop');
+      const form = document.querySelector('.form-popup');
+      backdrop.style.display = 'block';
+      form.style.display = 'block';
+  }
+});
+
+  // Function to handle login state
+  function updateLoginState(isLoggedIn, phoneNumber = null) {
+      userAuthState = {
+          isLoggedIn,
+          phone: phoneNumber,
+          lastLoginTimestamp: Date.now()
+      };
+      localStorage.setItem('userAuthState', JSON.stringify(userAuthState));
+      updateUIBasedOnAuth();
+  }
+
 
 
   let audioContext = null
@@ -114,6 +222,7 @@ function initializeApp() {
   const songTitle = document.querySelector('#songTitle')
   const songLocation = document.querySelector('#songLocation')
   const loadingIndicator = document.getElementById('loading-indicator')
+  const popUpElement = document.getElementById('popUpElement')
 
   // Audio visualization canvas
   const visualizerCanvas = document.getElementById('canvas')
@@ -122,15 +231,35 @@ function initializeApp() {
     visualizerCanvas.height = window.innerHeight
   }
 
+
+  function updateSongDisplay() {
+    const isPlaying = !recordPlayer.paused && recordPlayer.currentTime > 0;
+    
+    if (!isPlaying) {
+        popUpElement.style.display = "none";
+        songTitle.textContent = "";
+        songLocation.textContent = "";
+  
+    } else {
+        popUpElement.style.display = "block";
+        // Make sure the text still shows when playing
+        const currentTrack = locations.find(loc => recordPlayer.src.includes(loc.audio));
+        if (currentTrack) {
+            songTitle.textContent = `Song: ${currentTrack.Title}`;
+            songLocation.textContent = `Location: ${currentTrack.Location}`;
+        }
+    }
+}
+
 function playSong() {
     // If we already have an audio context, reuse it
     if (!audioContext) {
-        audioContext = new AudioContext()
-        audioSource = audioContext.createMediaElementSource(recordPlayer)
-        analyser = audioContext.createAnalyser()
-        
-        audioSource.connect(analyser)
-        analyser.connect(audioContext.destination)
+      audioContext = new AudioContext();
+      audioSource = audioContext.createMediaElementSource(recordPlayer);
+      analyser = audioContext.createAnalyser();
+      audioSource.connect(analyser);
+      analyser.connect(audioContext.destination);
+      updateSongDisplay(); // Hide initially
     }
     
     analyser.fftSize = 256
@@ -177,8 +306,6 @@ function playSong() {
     
     renderFrame()
 }
-
-recordPlayer.addEventListener("play", playSong)
 
 // =========================================
 // Audio Loading Manager
@@ -246,7 +373,6 @@ const sphere = new THREE.Mesh(
   sphere.rotation.y = -Math.PI / 2
 
 // Atmosphere effect
-// In your globe creation section:
 const atmosphere = new THREE.Mesh(
   new THREE.SphereGeometry(6, 50, 50),
   new THREE.ShaderMaterial({
@@ -266,6 +392,8 @@ const atmosphere = new THREE.Mesh(
 
 atmosphere.scale.set(1.1, 1.1, 1.1)
 scene.add(atmosphere)
+
+//Added twice for thicker appearance
 
 atmosphere.scale.set(1.1, 1.1, 1.1)
 scene.add(atmosphere)
@@ -406,6 +534,7 @@ function enhanceLocationMarker(mesh, isHovered, isPlaying) {
     })
 }
 
+
 // Audio loading and playback
 async function loadAndPlaySong(marker) {
     return new Promise((resolve, reject) => {
@@ -418,11 +547,12 @@ async function loadAndPlaySong(marker) {
             AudioLoadingManager.hideLoading();
             // Initialize audio context on user interaction
             if (!audioContext) {
-                audioContext = new AudioContext();
-                audioSource = audioContext.createMediaElementSource(recordPlayer);
-                analyser = audioContext.createAnalyser();
-                audioSource.connect(analyser);
-                analyser.connect(audioContext.destination);
+              updateSongDisplay(); // Hide initially
+              audioContext = new AudioContext();
+              audioSource = audioContext.createMediaElementSource(recordPlayer);
+              analyser = audioContext.createAnalyser();
+              audioSource.connect(analyser);
+              analyser.connect(audioContext.destination);
             }
             
             recordPlayer.play()
@@ -507,119 +637,110 @@ function updateRotationSpeed(isPlaying) {
   controls.autoRotate = true; // Always keep rotating
   controls.autoRotateSpeed = isPlaying ? 0.3 : 0.5; // Adjust speed based on playback
 }
-
   // =========================================
   // Album Cover Interactions
   // =========================================
 
-    // Function to generate album covers HTML
-    function generateAlbumCovers() {
-      const container = document.querySelector('.album-covers');
-      if (!container) return;
-  
-      // Clear existing content
-      container.innerHTML = '';
-  
-      // Generate album covers from locations data
-      locations.forEach(location => {
-          const albumCover = document.createElement('div');
-          albumCover.className = 'album-cover';
-          albumCover.dataset.location = location.Location.toLowerCase();
-  
-          // Create image element
-          const img = document.createElement('img');
-          img.src = location.img;
-          img.alt = `${location.Title} Album Cover`;
-  
-          // Create info overlay
-          const albumInfo = document.createElement('div');
-          albumInfo.className = 'album-info';
-          
-          const titleSpan = document.createElement('span');
-          titleSpan.className = 'album-title';
-          titleSpan.textContent = location.Title;
-          
-          const locationSpan = document.createElement('span');
-          locationSpan.className = 'album-location';
-          locationSpan.textContent = location.Location;
-  
-          // Assemble the elements
-          albumInfo.appendChild(titleSpan);
-          albumInfo.appendChild(locationSpan);
-          albumCover.appendChild(img);
-          albumCover.appendChild(albumInfo);
-          container.appendChild(albumCover);
-  
-          // Add click event listener
-          albumCover.addEventListener('click', handleAlbumCoverClick);
-      });
-    }
+  // Function to generate album covers HTML
+  function generateAlbumCovers() {
+    const container = document.querySelector('.album-covers');
+    if (!container) return;
 
-  function handleAlbumCoverClick(event) {
-    const albumCover = event.currentTarget;
-    const location = albumCover.dataset.location;
-    
-    // Find corresponding marker
-    const marker = group.children.find(mesh => 
-      mesh.geometry.type === 'BoxGeometry' && 
-      mesh.Location.toLowerCase() === location.toLowerCase()
-    );
+    // Clear existing content
+    container.innerHTML = '';
 
-    if (marker) {
-      // Update UI
-      AudioLoadingManager.showLoading();
-      songLocation.innerHTML = marker.Location;
-      songTitle.innerHTML = marker.Title;
+    // Generate album covers from locations data
+    locations.forEach(location => {
+        const albumCover = document.createElement('div');
+        albumCover.className = 'album-cover';
+        albumCover.dataset.location = location.Location.toLowerCase();
 
-      // Remove playing class from all album covers
-      document.querySelectorAll('.album-cover').forEach(cover => {
-        cover.classList.remove('playing');
-      });
+        // Create image element
+        const img = document.createElement('img');
+        img.src = location.img;
+        img.alt = `${location.Title} Album Cover`;
 
-      // Add playing class to clicked album
-      albumCover.classList.add('playing');
+        // Create info overlay
+        // const albumInfo = document.createElement('div');
+        // albumInfo.className = 'album-info';
+        
+        // const titleSpan = document.createElement('span');
+        // titleSpan.className = 'album-title';
+        // titleSpan.textContent = location.Title;
+        
+        // const locationSpan = document.createElement('span');
+        // locationSpan.className = 'album-location';
+        // locationSpan.textContent = location.Location;
 
-      // Load and play the song
-      loadAndPlaySong(marker).catch(error => {
-        console.error('Error loading audio:', error);
-        AudioLoadingManager.hideLoading();
-      });
+        // Assemble the elements
+        // albumInfo.appendChild(titleSpan);
+        // albumInfo.appendChild(locationSpan);
+        // albumCover.appendChild(albumInfo);
 
-      // Animate camera to marker position
-      const markerPosition = new THREE.Vector3();
-      marker.getWorldPosition(markerPosition);
+        container.appendChild(albumCover);
+        albumCover.appendChild(img);
+
+        function handleAlbumCoverClick(event) {
+          // Check auth state first
+          if (!userAuthState.isLoggedIn) {
+              const backdrop = document.querySelector('.backdrop');
+              const form = document.getElementById('myForm');
+              if (backdrop && form) {
+                  backdrop.style.display = 'block';
+                  form.style.display = 'block';
+              }
+              return;
+          }
       
-      // Calculate camera target position
-      const distance = 20; // Adjust this value to control how close the camera gets
-      const cameraTargetPosition = markerPosition.clone().normalize().multiplyScalar(distance);
+          const albumCover = event.currentTarget;
+          const location = albumCover.dataset.location;
+          
+          const marker = group.children.find(mesh => 
+              mesh.geometry.type === 'BoxGeometry' && 
+              mesh.Location.toLowerCase() === location.toLowerCase()
+          );
       
-      // Animate camera movement
-      gsap.to(camera.position, {
-        x: cameraTargetPosition.x,
-        y: cameraTargetPosition.y,
-        z: cameraTargetPosition.z,
-        duration: 1.5,
-        ease: "power2.inOut"
-      });
-    }
+          if (marker) {
+              // Rest of your existing album click handler code...
+              AudioLoadingManager.showLoading();
+              songTitle.textContent = `Song: ${marker.Title}`;
+              songLocation.textContent = `Location: ${marker.Location}`;
+              popUpElement.style.display = "block";
+      
+              document.querySelectorAll('.album-cover').forEach(cover => {
+                  cover.classList.remove('playing');
+              });
+      
+              albumCover.classList.add('playing');
+      
+              loadAndPlaySong(marker).catch(error => {
+                  console.error('Error loading audio:', error);
+                  AudioLoadingManager.hideLoading();
+              });
+      
+              const markerPosition = new THREE.Vector3();
+              marker.getWorldPosition(markerPosition);
+              
+              const distance = 12;
+              const cameraTargetPosition = markerPosition.clone().normalize().multiplyScalar(distance);
+              
+              gsap.to(camera.position, {
+                  x: cameraTargetPosition.x,
+                  y: cameraTargetPosition.y,
+                  z: cameraTargetPosition.z,
+                  duration: 1.5,
+                  ease: "power2.inOut"
+              });
+          }
+      }
+      
+        // Add click event listener
+        albumCover.addEventListener('click', handleAlbumCoverClick);
+    });
   }
 
-    // Generate album covers and add click listeners
-    generateAlbumCovers();
-
-    // Update playing state of album covers when a marker is clicked
-    function updateAlbumCoversState(marker) {
-      document.querySelectorAll('.album-cover').forEach(cover => {
-        const isPlaying = marker && 
-          cover.dataset.location.toLowerCase() === marker.Location.toLowerCase();
-        cover.classList.toggle('playing', isPlaying);
-      });
-    }
-
-  // Add click listeners to album covers
-  document.querySelectorAll('.album-cover').forEach(albumCover => {
-    albumCover.addEventListener('click', handleAlbumCoverClick);
-  });
+  // Generate album covers and add click listeners
+  generateAlbumCovers();
 
   // Update playing state of album covers when a marker is clicked
   function updateAlbumCoversState(marker) {
@@ -629,20 +750,29 @@ function updateRotationSpeed(isPlaying) {
       cover.classList.toggle('playing', isPlaying);
     });
   }
-
   // =========================================
   // Event Listeners
   // =========================================
 
-function handleInteraction(event) {
+  function handleInteraction(event) {
     // Prevent default behavior
     event.preventDefault();
 
-    // Get the position for both touch and click events
+    // First check authentication
+    if (!userAuthState.isLoggedIn) {
+        const backdrop = document.querySelector('.backdrop');
+        const form = document.getElementById('myForm');
+        if (backdrop && form) {
+            backdrop.style.display = 'block';
+            form.style.display = 'block';
+        }
+        return; // Stop here if not logged in
+    }
+
+    // If logged in, proceed with normal interaction
     const x = event.clientX || (event.touches && event.touches[0].clientX);
     const y = event.clientY || (event.touches && event.touches[0].clientY);
 
-    // Convert to normalized device coordinates
     mouse.x = (x / window.innerWidth) * 2 - 1;
     mouse.y = -(y / window.innerHeight) * 2 + 1;
 
@@ -653,14 +783,15 @@ function handleInteraction(event) {
 
     if (intersects.length > 0) {
         const marker = intersects[0].object;
-        // Force autoRotate to true but at a slower speed
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.2; // Reduced speed when playing
+        controls.autoRotateSpeed = 0.2;
 
-        // Update display and play song
         AudioLoadingManager.showLoading();
-        songLocation.innerHTML = marker.Location;
-        songTitle.innerHTML = marker.Title;
+        songTitle.textContent = `Song: ${marker.Title}`;
+        songLocation.textContent = `Location: ${marker.Location}`;
+        popUpElement.style.display = "block";
+        
+        updateAlbumCoversState(marker);
         
         loadAndPlaySong(marker).catch(error => {
             console.error('Error loading audio:', error);
@@ -670,7 +801,13 @@ function handleInteraction(event) {
 }
 
 canvas.addEventListener('click', handleInteraction, { passive: false });
-canvas.addEventListener('touchstart', handleInteraction, { passive: false });
+
+recordPlayer.addEventListener("play", () => {
+  playSong();
+  updateSongDisplay();
+});
+recordPlayer.addEventListener("pause", updateSongDisplay);
+recordPlayer.addEventListener("ended", updateSongDisplay);
 
 canvas.addEventListener('mousedown', ({ clientX, clientY }) => {
     mouse.down = true
@@ -812,19 +949,21 @@ function initializeForm() {
 
   // Subscription dialog handlers
   acceptSubscription.addEventListener('click', () => {
-      localStorage.setItem('subscribed', 'true')
-      localStorage.setItem('formSubmitted', 'true')
-      subscriptionDialog.classList.add('dialog-hidden')
-      form.style.display = 'none'
-      if (backdrop) backdrop.style.display = 'none'
-  })
+    const phoneNumber = phoneInput.value.trim();
+    updateLoginState(true, phoneNumber);
+    subscriptionDialog.classList.add('dialog-hidden');
+    document.querySelector('.form-popup').style.display = 'none';
+    document.querySelector('.backdrop').style.display = 'none';
+});
   
-  declineSubscription.addEventListener('click', () => {
-      localStorage.setItem('formSubmitted', 'true')
-      subscriptionDialog.classList.add('dialog-hidden')
-      form.style.display = 'none'
-      if (backdrop) backdrop.style.display = 'none'
-  })
+declineSubscription.addEventListener('click', () => {
+  const phoneNumber = phoneInput.value.trim();
+  updateLoginState(true, phoneNumber); // Still log them in, just don't subscribe
+  localStorage.setItem('formSubmitted', 'true');
+  subscriptionDialog.classList.add('dialog-hidden');
+  document.querySelector('.form-popup').style.display = 'none';
+  document.querySelector('.backdrop').style.display = 'none';
+});
 
   // Check if form was already submitted
   if (localStorage.getItem('formSubmitted') === 'true') {
@@ -833,12 +972,8 @@ function initializeForm() {
   }
 }
 
-// Call initializeForm after DOM is loaded
-// document.addEventListener('DOMContentLoaded', () => {
-//   initializeForm()
-// })
 
-  // Handle window resize
+// Handle window resize
 addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
@@ -850,7 +985,13 @@ addEventListener('resize', () => {
     }
 })
 
+// if(loggedIn = false){
+//   albumCover.disabled = true
+//   initializeForm()
+
+// }
+
   // Start the application
   animate()
-  initializeForm()
+  updateUIBasedOnAuth();
 }
