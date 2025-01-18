@@ -9,55 +9,48 @@
   <body>
     <!-- Login Form -->
     <div class="backdrop" style="display: none;"></div>
-
-<div class="form-popup" id="myForm">
-  <div class="form-container">
-    <p class="form-title">Welcome to SongMap</p>
-    <p class="form-subtitle">Enter your number to continue</p>
-    <input 
-      type="tel" 
-      placeholder="(555) 555-5555" 
-      name="phoneNumber" 
-      id="phoneNumber" 
-      required
-    >
-    <button type="button" id="submitButton" class="submit-btn">
-      <span class="button-text">Continue</span>
-      <div class="button-loader hidden"></div>
-    </button>
-    <p id="formMessage" class="form-message"></p>
-  </div>
-</div>
-<div id="subscriptionDialog" class="dialog-hidden">
-  <div class="dialog-content">
-      <h2>Weekly Songs</h2>
-      <p>Would you like to receive weekly song recommendations via text?</p>
-      <div class="dialog-buttons">
-          <button id="acceptSubscription" class="dialog-btn accept">Yes, sign me up!</button>
-          <button id="declineSubscription" class="dialog-btn decline">No, thanks</button>
+    <div class="form-popup" id="myForm">
+    <div class="form-container">
+      <p class="form-title">Welcome to SongMap</p>
+      <p class="form-subtitle">Enter your number to continue</p>
+      <input 
+        type="tel" 
+        placeholder="(555) 555-5555" 
+        name="phoneNumber" 
+        id="phoneNumber" 
+        required
+      >
+      <button type="button" id="submitButton" class="submit-btn">
+        <span class="button-text">Continue</span>
+        <div class="button-loader hidden"></div>
+      </button>
+      <p id="formMessage" class="form-message"></p>
+    </div>
+    </div>
+    <div id="subscriptionDialog" class="dialog-hidden">
+      <div class="dialog-content">
+          <h2>Weekly Songs</h2>
+          <p>Would you like to receive weekly song recommendations via text?</p>
+          <div class="dialog-buttons">
+              <button id="acceptSubscription" class="dialog-btn accept">Yes, sign me up!</button>
+              <button id="declineSubscription" class="dialog-btn decline">No, thanks</button>
+          </div>
       </div>
-  </div>
-</div>
-
+    </div>
     <!-- Main Application Elements -->
     <canvas class="webgl"></canvas>
-    
     <!-- Text Elements -->
     <div class="textbox">
       <h2 class="innertext"></h2>
     </div>
-    
     <!-- Song Information -->
     <div id="popUpElement">
       <h2 id="songTitle" class="text-black">Song: </h2>
       <p id="songLocation" class="text-black">Location: </p>
     </div>
-
     <!-- Audio Visualization Elements -->
     <div class="circle"></div>
     <canvas id="canvas"></canvas>
-
-        <!-- Album Covers -->
     <!-- Album Covers -->
     <div class="album-covers-container">
       <div class="album-covers">
@@ -104,12 +97,8 @@
           </div>
         </div>
       </div>
-    </div>
-    
-        
-    
-    <!-- Audio Player -->
-    <div class="holder">
+    </div>    
+      <div class="holder">
       <audio 
         id="song" 
         crossorigin="anonymous" 
@@ -118,13 +107,11 @@
         src="/yachtclub.mp3"
       ></audio>
     </div>
-
     <!-- Loading Indicator -->
     <div id="loading-indicator" class="loading-hidden">
       <div class="loading-spinner"></div>
       <span class="loading-text">Loading track...</span>
     </div>
-
     <!-- Scripts -->
     <script type="module" src="/main.js"></script>
   </body>
