@@ -98,6 +98,10 @@ let userAuthState = {
   lastLoginTimestamp: null
 };
 
+const form = document.getElementById('myForm');
+const backdrop = document.querySelector('.backdrop');
+const subscriptionDialog = document.getElementById('subscriptionDialog');
+
 // Initialize application when DOM is ready
 document.addEventListener('DOMContentLoaded', initializeApp)
 
@@ -111,16 +115,13 @@ function initializeApp() {
   }
 
   // Hide form and backdrop initially
-  const backdrop = document.querySelector('.backdrop');
-  const form = document.querySelector('.form-popup');
+
   if (backdrop) backdrop.style.display = 'none';
   if (form) form.style.display = 'none';
 
   function updateUIBasedOnAuth() {
     const musicInteractiveElements = document.querySelectorAll('.album-cover');
     const audioPlayer = document.getElementById('song');
-    const backdrop = document.querySelector('.backdrop');
-    const form = document.querySelector('.form-popup');
 
     function handleMusicInteraction(e) {
       if (!userAuthState.isLoggedIn) {
@@ -182,8 +183,6 @@ function initializeApp() {
   document.getElementById('song').addEventListener('click', function (e) {
     if (!userAuthState.isLoggedIn) {
       e.preventDefault();
-      const backdrop = document.querySelector('.backdrop');
-      const form = document.querySelector('.form-popup');
       backdrop.style.display = 'block';
       form.style.display = 'block';
     }
@@ -657,7 +656,6 @@ function initializeApp() {
       function handleAlbumCoverClick(event) {
         // Check auth state first
         if (!userAuthState.isLoggedIn) {
-          const backdrop = document.querySelector('.backdrop');
           const form = document.getElementById('myForm');
           if (backdrop && form) {
             backdrop.style.display = 'block';
@@ -734,7 +732,6 @@ function initializeApp() {
 
     // First check authentication
     if (!userAuthState.isLoggedIn) {
-      const backdrop = document.querySelector('.backdrop');
       const form = document.getElementById('myForm');
       if (backdrop && form) {
         backdrop.style.display = 'block';
@@ -822,14 +819,11 @@ function initializeApp() {
 
   function initializeForm() {
     // Get all DOM elements
-    const form = document.getElementById('myForm')
     const submitButton = document.getElementById('submitButton')
     const buttonText = submitButton.querySelector('.button-text')
     const buttonLoader = submitButton.querySelector('.button-loader')
     const formMessage = document.getElementById('formMessage')
     const phoneInput = document.getElementById('phoneNumber')
-    const backdrop = document.querySelector('.backdrop')
-    const subscriptionDialog = document.getElementById('subscriptionDialog')
     const acceptSubscription = document.getElementById('acceptSubscription')
     const declineSubscription = document.getElementById('declineSubscription')
 
@@ -946,9 +940,9 @@ function initializeApp() {
 
   // Function to close the form
   function closeForm() {
-    form.style.display = 'none';
-    backdrop.style.display = 'none';
-    subscriptionDialog.classList.add('dialog-hidden');
+    if (form) form.style.display = 'none';
+    if (backdrop) backdrop.style.display = 'none';
+    if (subscriptionDialog) subscriptionDialog.classList.add('dialog-hidden');
   }
 
   // Add click event listener to backdrop to close form when clicking outside
@@ -974,4 +968,5 @@ function initializeApp() {
   // Start the application
   animate()
   updateUIBasedOnAuth();
+  initializeForm()
 }
