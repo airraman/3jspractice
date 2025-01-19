@@ -101,6 +101,18 @@ let userAuthState = {
 const form = document.getElementById('myForm');
 const backdrop = document.querySelector('.backdrop');
 const subscriptionDialog = document.getElementById('subscriptionDialog');
+const API_URL = '/api';
+
+function initializeUI() {
+  const popUpElement = document.getElementById('popUpElement');
+  const songTitle = document.querySelector('#songTitle');
+  const songLocation = document.querySelector('#songLocation');
+  
+  // Ensure everything is hidden initially
+  popUpElement.style.display = "none";
+  songTitle.textContent = "";
+  songLocation.textContent = "";
+}
 
 // Initialize application when DOM is ready
 document.addEventListener('DOMContentLoaded', initializeApp)
@@ -217,6 +229,7 @@ function initializeApp() {
   const loadingIndicator = document.getElementById('loading-indicator')
   const popUpElement = document.getElementById('popUpElement')
 
+
   // Audio visualization canvas
   const visualizerCanvas = document.getElementById('canvas')
   if (visualizerCanvas) {
@@ -226,17 +239,23 @@ function initializeApp() {
 
   function updateSongDisplay() {
     const isPlaying = !recordPlayer.paused && recordPlayer.currentTime > 0;
-
+    const textbox = document.querySelector('.textbox .innertext');
+    const popUpElement = document.getElementById('popUpElement');
+    const songTitle = document.querySelector('#songTitle');
+    const songLocation = document.querySelector('#songLocation');
+  
     if (!isPlaying) {
+      // When no song is playing, only show "Select a city"
+      textbox.textContent = "Select a city";
       popUpElement.style.display = "none";
       songTitle.textContent = "";
       songLocation.textContent = "";
-
     } else {
-      popUpElement.style.display = "block";
-      // Make sure the text still shows when playing
+      // When a song is playing, only show song information
+      textbox.textContent = "";
       const currentTrack = locations.find(loc => recordPlayer.src.includes(loc.audio));
       if (currentTrack) {
+        popUpElement.style.display = "block";
         songTitle.textContent = `Song: ${currentTrack.Title}`;
         songLocation.textContent = `Location: ${currentTrack.Location}`;
       }
@@ -251,8 +270,9 @@ function initializeApp() {
       analyser = audioContext.createAnalyser();
       audioSource.connect(analyser);
       analyser.connect(audioContext.destination);
-      updateSongDisplay(); // Hide initially
     }
+
+    updateSongDisplay()
 
     analyser.fftSize = 256
     const bufferLength = analyser.frequencyBinCount
@@ -965,8 +985,24 @@ function initializeApp() {
     }
   })
 
+  async function handlePhoneSubmission(phoneNumber) {
+    try {
+      const response = await fetch(`${API_URL}/user/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ phoneNumber })
+      });
+      // Rest of the code...
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  }
+
   // Start the application
   animate()
   updateUIBasedOnAuth();
   initializeForm()
+  initializeUI(); // Add this line
 }
