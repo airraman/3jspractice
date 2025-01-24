@@ -879,36 +879,46 @@ function initializeApp() {
     // Phone number submission
     async function submitPhoneNumber(phoneNumber) {
       try {
-        buttonText.classList.add('hidden')
-        buttonLoader.classList.remove('hidden')
-
-        const formData = {
-          phoneNumber: phoneNumber,
-          timestamp: new Date().toISOString()
-        }
-
-        const response = await fetch(SCRIPT_URL, {
+        buttonText.classList.add('hidden');
+        buttonLoader.classList.remove('hidden');
+    
+        // First, check if the number exists in our database
+        const checkResponse = await fetch(`${API_URL}/user/check/${phoneNumber}`);
+        const checkResult = await checkResponse.json();
+    
+        // Log the attempt to Google Sheets for analytics
+        await fetch(SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData)
-        })
-
-        formMessage.textContent = 'Thank you!'
-        formMessage.style.color = '#4CAF50'
-
-        // Show subscription dialog
-        subscriptionDialog.classList.remove('dialog-hidden')
-
+          body: JSON.stringify({
+            phoneNumber: phoneNumber,
+            timestamp: new Date().toISOString(),
+            action: 'attempted_login'
+          })
+        });
+    
+        if (checkResult.exists) {
+          // If user exists, log them in directly
+          updateLoginState(true, phoneNumber);
+          closeForm();
+          return;
+        }
+    
+        // If user doesn't exist, show the subscription dialog
+        formMessage.textContent = 'Welcome new user!';
+        formMessage.style.color = '#4CAF50';
+        subscriptionDialog.classList.remove('dialog-hidden');
+    
       } catch (error) {
-        console.error('Submission error:', error)
-        formMessage.textContent = 'Something went wrong. Please try again.'
-        formMessage.style.color = '#f44336'
+        console.error('Submission error:', error);
+        formMessage.textContent = 'Something went wrong. Please try again.';
+        formMessage.style.color = '#f44336';
       } finally {
-        buttonText.classList.remove('hidden')
-        buttonLoader.classList.add('hidden')
+        buttonText.classList.remove('hidden');
+        buttonLoader.classList.add('hidden');
       }
     }
 
@@ -934,21 +944,89 @@ function initializeApp() {
     })
 
     // Subscription dialog handlers
-    acceptSubscription.addEventListener('click', () => {
+    acceptSubscription.addEventListener('click', async () => {
       const phoneNumber = phoneInput.value.trim();
-      updateLoginState(true, phoneNumber);
-      subscriptionDialog.classList.add('dialog-hidden');
-      document.querySelector('.form-popup').style.display = 'none';
-      document.querySelector('.backdrop').style.display = 'none';
+      try {
+        // User consented to signup - save to database
+        const response = await fetch(`${API_URL}/user/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            phoneNumber,
+            subscribeToTexts: true
+          })
+        });
+    
+        if (!response.ok) throw new Error('Signup failed');
+    
+        // Log successful signup to Google Sheets
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phoneNumber: phoneNumber,
+            timestamp: new Date().toISOString(),
+            action: 'new_signup',
+            subscribed: true
+          })
+        });
+    
+        updateLoginState(true, phoneNumber);
+        closeForm();
+    
+      } catch (error) {
+        console.error('Signup error:', error);
+        formMessage.textContent = 'Signup failed. Please try again.';
+        formMessage.style.color = '#f44336';
+      }
     });
 
-    declineSubscription.addEventListener('click', () => {
+    declineSubscription.addEventListener('click', async () => {
       const phoneNumber = phoneInput.value.trim();
-      updateLoginState(true, phoneNumber); // Still log them in, just don't subscribe
-      localStorage.setItem('formSubmitted', 'true');
-      subscriptionDialog.classList.add('dialog-hidden');
-      document.querySelector('.form-popup').style.display = 'none';
-      document.querySelector('.backdrop').style.display = 'none';
+      try {
+        // User declined subscription but we still save them with subscribeToTexts: false
+        const response = await fetch(`${API_URL}/user/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            phoneNumber,
+            subscribeToTexts: false
+          })
+        });
+    
+        if (!response.ok) throw new Error('Signup failed');
+    
+        // Log to Google Sheets
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phoneNumber: phoneNumber,
+            timestamp: new Date().toISOString(),
+            action: 'new_signup',
+            subscribed: false
+          })
+        });
+    
+        updateLoginState(true, phoneNumber);
+        localStorage.setItem('formSubmitted', 'true');
+        closeForm();
+    
+      } catch (error) {
+        console.error('Signup error:', error);
+        formMessage.textContent = 'Signup failed. Please try again.';
+        formMessage.style.color = '#f44336';
+      }
     });
 
     // Check if form was already submitted

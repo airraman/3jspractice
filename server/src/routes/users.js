@@ -61,4 +61,19 @@ router.post('/subscribe', async (req, res) => {
     }
 });
 
+router.get('/user/check/:phoneNumber', async (req, res) => {
+    try {
+        const { phoneNumber } = req.params;
+        
+        if (!validatePhoneNumber(phoneNumber)) {
+            return res.status(400).json({ error: 'Invalid phone number format' });
+        }
+
+        const user = await User.findOne({ phoneNumber });
+        res.json({ exists: !!user });
+    } catch (error) {
+        console.error('Phone check error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 module.exports = { userRouter: router };
