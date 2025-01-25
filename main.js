@@ -847,8 +847,6 @@ function initializeApp() {
     const acceptSubscription = document.getElementById('acceptSubscription')
     const declineSubscription = document.getElementById('declineSubscription')
 
-
-
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7tHnAV1TdhnDo-ci02Wd87WztdAn8UEmmcEK8r7r4KZXVascnYLy0M_TN7cF8zeEfug/exec'
 
     // Set initial button state
@@ -882,7 +880,7 @@ function initializeApp() {
         buttonText.classList.add('hidden');
         buttonLoader.classList.remove('hidden');
     
-        // First, check if the number exists in our database
+        // First, check if the number exists in MongoDB Database
         const checkResponse = await fetch(`${API_URL}/user/check/${phoneNumber}`);
         const checkResult = await checkResponse.json();
     

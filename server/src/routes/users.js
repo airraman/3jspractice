@@ -61,7 +61,7 @@ router.post('/subscribe', async (req, res) => {
     }
 });
 
-router.get('/user/check/:phoneNumber', async (req, res) => {
+router.get('/check/:phoneNumber', async (req, res) => {
     try {
         const { phoneNumber } = req.params;
         
