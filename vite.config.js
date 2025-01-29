@@ -1,19 +1,16 @@
 // vite.config.js
 
-import vitePluginString from 'vite-plugin-string'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vite';
+import glsl from 'vite-plugin-glsl';
 
 export default defineConfig({
-  plugins: [
-    vitePluginString()
-  ],
+  plugins: [glsl()],
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:5001',
         changeOrigin: true,
-        secure: false
-      }
+        secure: false      }
     }
   }
-})
+});

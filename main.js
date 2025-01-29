@@ -5,10 +5,10 @@ import * as THREE from 'three'
 import './style.css'
 import gsap from 'gsap'
 import { OrbitControls } from 'three/examples/jsm/Addons.js'
-import vertexShader from './shaders/vertex.glsl'
-import fragmentShader from './shaders/fragment.glsl'
-import atmosphereVertex from './shaders/atmosphereVertex.glsl'
-import atmosphereFragment from './shaders/atmosphereFragment.glsl'
+import vertexShader from './shaders/vertex.glsl?raw'
+import fragmentShader from './shaders/fragment.glsl?raw'
+import atmosphereVertex from './shaders/atmosphereVertex.glsl?raw'
+import atmosphereFragment from './shaders/atmosphereFragment.glsl?raw'
 import AudioMotionAnalyzer from 'audiomotion-analyzer'
 
 // =========================================
@@ -379,7 +379,7 @@ function initializeApp() {
         }
       }
     })
-  )
+  );
 
   // Initial sphere rotation
   sphere.rotation.y = -Math.PI / 2
@@ -880,39 +880,34 @@ function initializeApp() {
         buttonText.classList.add('hidden');
         buttonLoader.classList.remove('hidden');
     
-        // First, check if the number exists in MongoDB Database
-        const checkResponse = await fetch(`${API_URL}/user/check/${phoneNumber}`);
-        const checkResult = await checkResponse.json();
-    
-        // Log the attempt to Google Sheets for analytics
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
+        // Log the request details
+        console.log('Making request to:', `${API_URL}/user/check/${phoneNumber}`);
+        
+        const checkResponse = await fetch(`${API_URL}/user/check/${phoneNumber}`, {
+          method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            phoneNumber: phoneNumber,
-            timestamp: new Date().toISOString(),
-            action: 'attempted_login'
-          })
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
         });
     
-        if (checkResult.exists) {
-          // If user exists, log them in directly
-          updateLoginState(true, phoneNumber);
-          closeForm();
-          return;
+        // Log response details
+        console.log('Response status:', checkResponse.status);
+        
+        if (!checkResponse.ok) {
+          const errorText = await checkResponse.text();
+          console.error('Server error:', errorText);
+          throw new Error(`Server responded with ${checkResponse.status}: ${errorText}`);
         }
     
-        // If user doesn't exist, show the subscription dialog
-        formMessage.textContent = 'Welcome new user!';
-        formMessage.style.color = '#4CAF50';
-        subscriptionDialog.classList.remove('dialog-hidden');
+        const checkResult = await checkResponse.json();
+        console.log('Check result:', checkResult);
+    
+        // Rest of your code...
     
       } catch (error) {
         console.error('Submission error:', error);
-        formMessage.textContent = 'Something went wrong. Please try again.';
+        formMessage.textContent = 'Connection error. Please try again.';
         formMessage.style.color = '#f44336';
       } finally {
         buttonText.classList.remove('hidden');
