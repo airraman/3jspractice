@@ -4,18 +4,26 @@ const User = require('../models/User');
 const { validatePhoneNumber } = require('../utils/validation');
 const { generateToken } = require('../utils/auth');
 
+// Helper function to format phone number to E.164
+function formatToE164(phoneNumber) {
+    // Remove all non-digits
+    const cleaned = phoneNumber.replace(/\D/g, '');
+    // Add the '+1' prefix for US numbers if not present
+    return cleaned.startsWith('1') ? `+${cleaned}` : `+1${cleaned}`;
+}
+
 router.post('/login', async (req, res) => {
     try {
-        const { phoneNumber } = req.body;
+        const formattedNumber = formatToE164(req.body.phoneNumber);
         
-        if (!validatePhoneNumber(phoneNumber)) {
+        if (!validatePhoneNumber(formattedNumber)) {
             return res.status(400).json({ error: 'Invalid phone number format' });
         }
 
-        let user = await User.findOne({ phoneNumber });
+        let user = await User.findOne({ phoneNumber: formattedNumber });
         
         if (!user) {
-            user = new User({ phoneNumber });
+            user = new User({ phoneNumber: formattedNumber });
         }
 
         if (!user.canAccessContent()) {
@@ -44,8 +52,8 @@ router.post('/login', async (req, res) => {
 
 router.post('/subscribe', async (req, res) => {
     try {
-        const { phoneNumber } = req.body;
-        const user = await User.findOne({ phoneNumber });
+        const formattedNumber = formatToE164(req.body.phoneNumber);
+        const user = await User.findOne({ phoneNumber: formattedNumber });
         
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -63,17 +71,20 @@ router.post('/subscribe', async (req, res) => {
 
 router.get('/check/:phoneNumber', async (req, res) => {
     try {
-        const { phoneNumber } = req.params;
+        const formattedNumber = formatToE164(req.params.phoneNumber);
+        console.log('Checking phone number:', formattedNumber);
         
-        if (!validatePhoneNumber(phoneNumber)) {
+        if (!validatePhoneNumber(formattedNumber)) {
             return res.status(400).json({ error: 'Invalid phone number format' });
         }
 
-        const user = await User.findOne({ phoneNumber });
+        const user = await User.findOne({ phoneNumber: formattedNumber });
+        console.log('User found:', user);
         res.json({ exists: !!user });
     } catch (error) {
         console.error('Phone check error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 module.exports = { userRouter: router };
