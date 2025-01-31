@@ -878,79 +878,64 @@ function initializeApp() {
 
     // Phone number submission and database check
     async function submitPhoneNumber(phoneNumber) {
-        try {
-            // Show loading state
-            buttonText.classList.add('hidden')
-            buttonLoader.classList.remove('hidden')
-            formMessage.textContent = 'Checking phone number...'
-            
-            // Log login attempt to Google Sheets
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    phoneNumber: phoneNumber,
-                    timestamp: new Date().toISOString(),
-                    action: 'login_attempt',
-                    status: 'initiated'
-                })
-            })
-            
-            // Step 2: Check if user exists in database
-            console.log('Checking phone number:', phoneNumber)
-            const checkResponse = await fetch(`${API_URL}/user/check/${phoneNumber}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-            
-            console.log('Check response status:', checkResponse.status)
-            
-            if (!checkResponse.ok) {
-                const errorText = await checkResponse.text()
-                throw new Error(`Server responded with ${checkResponse.status}: ${errorText}`)
-            }
-            
-            const checkResult = await checkResponse.json()
-            console.log('Check result:', checkResult)
-            
-            // Log successful phone check to Google Sheets
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    phoneNumber: phoneNumber,
-                    timestamp: new Date().toISOString(),
-                    action: 'login_attempt',
-                    status: 'phone_verified'
-                })
-            })
-            
-            // Step 3: Show subscription dialog
-            if (subscriptionDialog) {
-                subscriptionDialog.classList.remove('dialog-hidden')
-            } else {
-                console.error('Subscription dialog element not found')
-                throw new Error('Subscription dialog not found')
-            }
-            
-        } catch (error) {
-            console.error('Phone submission error:', error)
-            formMessage.textContent = 'Error checking phone number. Please try again.'
-            formMessage.style.color = '#f44336'
-        } finally {
-            buttonText.classList.remove('hidden')
-            buttonLoader.classList.add('hidden')
-        }
-    }
+      try {
+          // Show loading state
+          buttonText.classList.add('hidden')
+          buttonLoader.classList.remove('hidden')
+          formMessage.textContent = 'Checking phone number...'
+          
+          // Log login attempt to Google Sheets
+          await fetch(SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                  phoneNumber: phoneNumber,
+                  timestamp: new Date().toISOString(),
+                  action: 'login_attempt',
+                  status: 'initiated'
+              })
+          })
+          
+          // Change the URL format to use query parameter
+          console.log('Checking phone number:', phoneNumber)
+          const checkResponse = await fetch(`${API_URL}/user/check?phoneNumber=${encodeURIComponent(phoneNumber)}`, {
+              method: 'GET',
+              headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+              }
+          })
+          
+          console.log('Check response status:', checkResponse.status)
+          
+          if (!checkResponse.ok) {
+              const errorText = await checkResponse.text()
+              throw new Error(`Server responded with ${checkResponse.status}: ${errorText}`)
+          }
+          
+          const checkResult = await checkResponse.json()
+          console.log('Check result:', checkResult)
+          
+          // Show subscription dialog
+          if (subscriptionDialog) {
+              subscriptionDialog.classList.remove('dialog-hidden')
+          } else {
+              console.error('Subscription dialog element not found')
+              throw new Error('Subscription dialog not found')
+          }
+          
+      } catch (error) {
+          console.error('Phone submission error:', error)
+          formMessage.textContent = 'Error checking phone number. Please try again.'
+          formMessage.style.color = '#f44336'
+      } finally {
+          buttonText.classList.remove('hidden')
+          buttonLoader.classList.add('hidden')
+      }
+  }
 
     // Form submit handler
     submitButton.addEventListener('click', async (e) => {
