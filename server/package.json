@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Backend for SongMap.io",
   "main": "src/index.js",
-  "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+ "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "NODE_ENV=production node src/index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
