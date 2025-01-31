@@ -1,5 +1,53 @@
 import mongoose from 'mongoose';
-import User from '../../server/src/models/User';
+
+// Define User Schema here instead of importing
+const userSchema = new mongoose.Schema({
+    phoneNumber: {
+        type: String,
+        required: true,
+        unique: true,
+        validate: {
+            validator: function(v) {
+                return /^\+[1-9]\d{1,14}$/.test(v);
+            },
+            message: props => `${props.value} is not a valid phone number!`
+        }
+    },
+    loginCount: {
+        type: Number,
+        default: 0
+    },
+    deliveryCount: {
+        type: Number,
+        default: 0
+    },
+    subscription: {
+        type: Boolean,
+        default: false
+    },
+    engagementRate: {
+        type: Number,
+        default: 0
+    },
+    lastLogin: {
+        type: Date,
+        default: Date.now
+    },
+    twilioStatus: {
+        type: String,
+        enum: ['ACTIVE', 'UNSUBSCRIBED', 'BLOCKED'],
+        default: 'ACTIVE'
+    },
+    trialUsageRemaining: {
+        type: Number,
+        default: 4
+    }
+}, {
+    timestamps: true
+});
+
+// Only create model if it doesn't exist
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 let cached = global.mongoose;
 
@@ -34,7 +82,9 @@ export default async function handler(req, res) {
     }
 
     try {
+        console.log('Connecting to database...');
         await connectToDatabase();
+        console.log('Database connected');
         
         const phoneNumber = req.query.phoneNumber;
         console.log('Checking phone number:', phoneNumber);
@@ -46,6 +96,7 @@ export default async function handler(req, res) {
         // Format phone number to E.164
         const cleaned = phoneNumber.replace(/\D/g, '');
         const formattedNumber = cleaned.startsWith('1') ? `+${cleaned}` : `+1${cleaned}`;
+        console.log('Formatted number:', formattedNumber);
 
         // Check if user exists
         const user = await User.findOne({ phoneNumber: formattedNumber });
@@ -54,6 +105,9 @@ export default async function handler(req, res) {
         res.status(200).json({ exists: !!user });
     } catch (error) {
         console.error('Phone check error:', error);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ 
+            error: 'Server error',
+            details: error.message 
+        });
     }
 }
