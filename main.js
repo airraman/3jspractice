@@ -846,6 +846,8 @@ function initializeApp() {
     const phoneInput = document.getElementById('phoneNumber')
     const acceptSubscription = document.getElementById('acceptSubscription')
     const declineSubscription = document.getElementById('declineSubscription')
+    const subscriptionDialog = document.getElementById('subscriptionDialog')
+    const form = document.getElementById('myForm')
 
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7tHnAV1TdhnDo-ci02Wd87WztdAn8UEmmcEK8r7r4KZXVascnYLy0M_TN7cF8zeEfug/exec'
 
@@ -856,185 +858,210 @@ function initializeApp() {
 
     // Phone number validation
     function isValidPhoneNumber(phone) {
-      const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
-      return phoneRegex.test(phone)
+        const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
+        return phoneRegex.test(phone)
     }
 
-    // Phone input handler
+    // Phone input handler with immediate validation
     phoneInput.addEventListener("input", () => {
-      const digitsOnly = phoneInput.value.replace(/\D/g, '')
-      if (digitsOnly.length === 10) {
-        submitButton.disabled = false
-        submitButton.style.backgroundColor = "#1a365d"
-        submitButton.style.cursor = "pointer"
-      } else {
-        submitButton.disabled = true
-        submitButton.style.backgroundColor = "#555"
-        submitButton.style.cursor = "not-allowed"
-      }
+        const digitsOnly = phoneInput.value.replace(/\D/g, '')
+        if (digitsOnly.length === 10) {
+            submitButton.disabled = false
+            submitButton.style.backgroundColor = "#1a365d"
+            submitButton.style.cursor = "pointer"
+        } else {
+            submitButton.disabled = true
+            submitButton.style.backgroundColor = "#555"
+            submitButton.style.cursor = "not-allowed"
+        }
     })
 
-    // Phone number submission
+    // Phone number submission and database check
     async function submitPhoneNumber(phoneNumber) {
-      try {
-        buttonText.classList.add('hidden');
-        buttonLoader.classList.remove('hidden');
-    
-        // Log the request details
-        console.log('Making request to:', `${API_URL}/user/check/${phoneNumber}`);
-        
-        const checkResponse = await fetch(`${API_URL}/user/check/${phoneNumber}`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
-    
-        // Log response details
-        console.log('Response status:', checkResponse.status);
-        
-        if (!checkResponse.ok) {
-          const errorText = await checkResponse.text();
-          console.error('Server error:', errorText);
-          throw new Error(`Server responded with ${checkResponse.status}: ${errorText}`);
+        try {
+            // Show loading state
+            buttonText.classList.add('hidden')
+            buttonLoader.classList.remove('hidden')
+            formMessage.textContent = 'Checking phone number...'
+            
+            // Log login attempt to Google Sheets
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    phoneNumber: phoneNumber,
+                    timestamp: new Date().toISOString(),
+                    action: 'login_attempt',
+                    status: 'initiated'
+                })
+            })
+            
+            // Step 2: Check if user exists in database
+            console.log('Checking phone number:', phoneNumber)
+            const checkResponse = await fetch(`${API_URL}/user/check/${phoneNumber}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            
+            console.log('Check response status:', checkResponse.status)
+            
+            if (!checkResponse.ok) {
+                const errorText = await checkResponse.text()
+                throw new Error(`Server responded with ${checkResponse.status}: ${errorText}`)
+            }
+            
+            const checkResult = await checkResponse.json()
+            console.log('Check result:', checkResult)
+            
+            // Log successful phone check to Google Sheets
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    phoneNumber: phoneNumber,
+                    timestamp: new Date().toISOString(),
+                    action: 'login_attempt',
+                    status: 'phone_verified'
+                })
+            })
+            
+            // Step 3: Show subscription dialog
+            if (subscriptionDialog) {
+                subscriptionDialog.classList.remove('dialog-hidden')
+            } else {
+                console.error('Subscription dialog element not found')
+                throw new Error('Subscription dialog not found')
+            }
+            
+        } catch (error) {
+            console.error('Phone submission error:', error)
+            formMessage.textContent = 'Error checking phone number. Please try again.'
+            formMessage.style.color = '#f44336'
+        } finally {
+            buttonText.classList.remove('hidden')
+            buttonLoader.classList.add('hidden')
         }
-    
-        const checkResult = await checkResponse.json();
-        console.log('Check result:', checkResult);
-    
-        // Rest of your code...
-    
-      } catch (error) {
-        console.error('Submission error:', error);
-        formMessage.textContent = 'Connection error. Please try again.';
-        formMessage.style.color = '#f44336';
-      } finally {
-        buttonText.classList.remove('hidden');
-        buttonLoader.classList.add('hidden');
-      }
     }
 
     // Form submit handler
     submitButton.addEventListener('click', async (e) => {
-      e.preventDefault()
+        e.preventDefault()
+        const phoneNumber = phoneInput.value.trim()
 
-      const phoneNumber = phoneInput.value.trim()
+        if (!phoneNumber) {
+            formMessage.textContent = 'Please enter your phone number'
+            formMessage.style.color = '#f44336'
+            return
+        }
 
-      if (!phoneNumber) {
-        formMessage.textContent = 'Please enter your phone number'
-        formMessage.style.color = '#f44336'
-        return
-      }
+        if (!isValidPhoneNumber(phoneNumber)) {
+            formMessage.textContent = 'Please enter a valid phone number'
+            formMessage.style.color = '#f44336'
+            return
+        }
 
-      if (!isValidPhoneNumber(phoneNumber)) {
-        formMessage.textContent = 'Please enter a valid phone number'
-        formMessage.style.color = '#f44336'
-        return
-      }
-
-      await submitPhoneNumber(phoneNumber)
+        await submitPhoneNumber(phoneNumber)
     })
 
-    // Subscription dialog handlers
+    // Handle subscription acceptance
     acceptSubscription.addEventListener('click', async () => {
-      const phoneNumber = phoneInput.value.trim();
-      try {
-        // User consented to signup - save to database
-        const response = await fetch(`${API_URL}/user/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            phoneNumber,
-            subscribeToTexts: true
-          })
-        });
-    
-        if (!response.ok) throw new Error('Signup failed');
-    
-        // Log successful signup to Google Sheets
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            phoneNumber: phoneNumber,
-            timestamp: new Date().toISOString(),
-            action: 'new_signup',
-            subscribed: true
-          })
-        });
-    
-        updateLoginState(true, phoneNumber);
-        closeForm();
-    
-      } catch (error) {
-        console.error('Signup error:', error);
-        formMessage.textContent = 'Signup failed. Please try again.';
-        formMessage.style.color = '#f44336';
-      }
-    });
+        const phoneNumber = phoneInput.value.trim()
+        try {
+            console.log('Accepting subscription for:', phoneNumber)
+            // Step 3: Save user to database with subscription
+            const response = await fetch(`${API_URL}/user/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    phoneNumber,
+                    subscribeToTexts: true
+                })
+            })
+            
+            console.log('Subscription response status:', response.status)
+            
+            if (!response.ok) {
+                const errorText = await response.text()
+                throw new Error(`Signup failed: ${errorText}`)
+            }
+            
+            const userData = await response.json()
+            console.log('User data:', userData)
+            
+            // Log to Google Sheets
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    phoneNumber: phoneNumber,
+                    timestamp: new Date().toISOString(),
+                    action: 'new_signup',
+                    subscribed: true
+                })
+            })
+            
+            // Update UI state
+            updateLoginState(true, phoneNumber)
+            closeForm()
+            
+        } catch (error) {
+            console.error('Subscription error:', error)
+            formMessage.textContent = 'Failed to save subscription. Please try again.'
+            formMessage.style.color = '#f44336'
+        }
+    })
 
+    // Handle subscription decline
     declineSubscription.addEventListener('click', async () => {
-      const phoneNumber = phoneInput.value.trim();
-      try {
-        // User declined subscription but we still save them with subscribeToTexts: false
-        const response = await fetch(`${API_URL}/user/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            phoneNumber,
-            subscribeToTexts: false
-          })
-        });
-    
-        if (!response.ok) throw new Error('Signup failed');
-    
-        // Log to Google Sheets
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            phoneNumber: phoneNumber,
-            timestamp: new Date().toISOString(),
-            action: 'new_signup',
-            subscribed: false
-          })
-        });
-    
-        updateLoginState(true, phoneNumber);
-        localStorage.setItem('formSubmitted', 'true');
-        closeForm();
-    
-      } catch (error) {
-        console.error('Signup error:', error);
-        formMessage.textContent = 'Signup failed. Please try again.';
-        formMessage.style.color = '#f44336';
-      }
-    });
+        const phoneNumber = phoneInput.value.trim()
+        try {
+            console.log('Declining subscription for:', phoneNumber)
+            // Allow access without saving to database
+            updateLoginState(true, phoneNumber)
+            localStorage.setItem('formSubmitted', 'true')
+            closeForm()
+            
+        } catch (error) {
+            console.error('Decline handling error:', error)
+            formMessage.textContent = 'Error processing request. Please try again.'
+            formMessage.style.color = '#f44336'
+        }
+    })
 
     // Check if form was already submitted
     if (localStorage.getItem('formSubmitted') === 'true') {
-      form.style.display = 'none'
-      if (backdrop) backdrop.style.display = 'none'
+        form.style.display = 'none'
+        if (backdrop) backdrop.style.display = 'none'
     }
-  }
+}
+
 
   // Function to close the form
   function closeForm() {
-    if (form) form.style.display = 'none';
-    if (backdrop) backdrop.style.display = 'none';
-    if (subscriptionDialog) subscriptionDialog.classList.add('dialog-hidden');
-  }
+    const form = document.getElementById('myForm')
+    const backdrop = document.querySelector('.backdrop')
+    const subscriptionDialog = document.getElementById('subscriptionDialog')
+    
+    if (form) form.style.display = 'none'
+    if (backdrop) backdrop.style.display = 'none'
+    if (subscriptionDialog) subscriptionDialog.classList.add('dialog-hidden')
+}
+
+
 
   // Add click event listener to backdrop to close form when clicking outside
   backdrop.addEventListener('click', (e) => {
