@@ -121,10 +121,16 @@ document.addEventListener('DOMContentLoaded', initializeApp)
 
 function initializeApp() {
 
-  const savedAuthState = localStorage.getItem('userAuthState');
-  if (savedAuthState) {
-    userAuthState = JSON.parse(savedAuthState);
-  }
+  userAuthState = {
+    isLoggedIn: true,  // Force this to true
+    phone: 'temp-user',
+    lastLoginTimestamp: Date.now()
+  };
+
+  // const savedAuthState = localStorage.getItem('userAuthState');
+  // if (savedAuthState) {
+  //   userAuthState = JSON.parse(savedAuthState);
+  // }
 
   // Hide form and backdrop initially
 
